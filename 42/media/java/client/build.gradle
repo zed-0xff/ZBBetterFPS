@@ -1,0 +1,51 @@
+plugins { id 'java' }
+
+def HOME_DIR = System.getProperty("user.home")
+def GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app"
+def GAME_JAVA_DIR = "${GAME_DIR}/Contents/Java"
+
+dependencies {
+    compileOnly files("${GAME_JAVA_DIR}/ZombieBuddy.jar")
+    compileOnly files(GAME_JAVA_DIR)
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+// place all .java files in the 'src' directory
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            include '**/*.java'
+        }
+    }
+}
+
+// disable annotation processing, JNI headers, and incremental compilation
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorPath = files()
+    options.generatedSourceOutputDirectory.set(provider { null })
+    options.headerOutputDirectory.set(provider { null })
+    options.incremental = false
+}
+
+tasks.register("cleanup") {
+    doLast {
+        delete "${buildDir}/tmp"
+        delete "${buildDir}/classes"
+    }
+}
+
+tasks.named("build") {
+    finalizedBy("cleanup")
+}
+

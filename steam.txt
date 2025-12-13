@@ -1,0 +1,35 @@
+[h1]ZBBetterFPS[/h1]
+
+Optimize FPS by decreasing the number of rendered tiles through configurable render distance settings.
+
+[b]Features:[/b]
+[list]
+[*] Reduces the number of rendered tiles to improve FPS performance
+[*] Runtime patching using ZombieBuddy framework
+[/list]
+
+[b]What it does:[/b]
+Allows you to reduce the render distance in Project Zomboid, which decreases the number of tiles rendered and can significantly improve FPS performance, especially on lower-end systems or in areas with many objects.
+
+[b]Important:[/b]
+[color=red]You must reload your savegame after changing the render distance setting for the changes to take effect.[/color] The render engine is initialized during the game load phase, so a savegame reload is required to apply the selected value.
+
+[b]Requirements:[/b]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3378285185]ZombieBuddy[/url] - Required framework
+
+[b]Usage:[/b]
+[color=red]You must reload your savegame after changing the render distance setting for the changes to take effect.[/color]
+
+[b]Development History:[/b]
+Initially, I wanted to make ZBBetterFPS as an add-on to the original ZBetterFPS mod. However, maintaining compatibility with both the mod's and game's code resulted in the implementation being too fragile. As a result, I decided to make it a standalone, non-compatible implementation. Despite this, all credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which served as the inspiration for this mod.
+
+[b]Credits:[/b]
+All credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which inspired this mod. ZBBetterFPS provides a ZombieBuddy-based implementation that allows runtime configuration without requiring manual file replacement.
+
+[b]Links:[/b]
+[url=https://github.com/zed-0xff/ZBBetterFPS]GitHub Repository[/url] (if applicable)
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] - Original mod by Alree
+
+[b]☕ Support the Developer:[/b]
+[url=https://ko-fi.com/zed_0xff][img]https://i.imgur.com/Utx6OIH.png[/img][/url]
+

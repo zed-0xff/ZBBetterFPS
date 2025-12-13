@@ -1,0 +1,11 @@
+name=Zed's Better FPS
+id=ZBBetterFPS
+icon=icon_256.png
+poster=icon_256.png
+description=Optimize FPS by decreasing the number of rendered tiles.
+
+incompatible=\BetterFPS_B42
+
+require=\ZombieBuddy
+javaJarFile=media/java/client/build/libs/client.jar
+javaPkgName=me.zed_0xff.zb_better_fps
