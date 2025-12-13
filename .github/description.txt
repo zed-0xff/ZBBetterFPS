@@ -1,0 +1,2 @@
+Optimize FPS in Project Zomboid by reducing render distance. Uses ZombieBuddy for runtime patching without modifying game files.
+
