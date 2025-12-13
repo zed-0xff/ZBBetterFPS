@@ -1,6 +1,6 @@
 name=Zed's Better FPS
 id=ZBBetterFPS
-icon=icon_256.png
+icon=icon_64.png
 poster=icon_256.png
 description=Optimize FPS by decreasing the number of rendered tiles.
 
