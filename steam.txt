@@ -35,19 +35,13 @@ Allows you to optimize FPS performance in Project Zomboid through two configurab
 The uncapped FPS setting takes effect immediately when applied through the mod options menu.
 
 [b]Important:[/b]
-[color=red]You must reload your savegame after changing the render distance setting for the changes to take effect.[/color] The render engine is initialized during the game load phase, so a savegame reload is required to apply the selected value.
+[b]You must reload your savegame after changing the render distance setting for the changes to take effect.[/b] The render engine is initialized during the game load phase, so a savegame reload is required to apply the selected value.
 
 [b]Requirements:[/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3378285185]ZombieBuddy[/url] - Required framework
 
-[b]Usage:[/b]
-[color=red]You must reload your savegame after changing the render distance setting for the changes to take effect.[/color]
-
 [b]Development History:[/b]
-Initially, I wanted to make ZBBetterFPS as an add-on to the original ZBetterFPS mod. However, maintaining compatibility with both the mod's and game's code resulted in the implementation being too fragile. As a result, I decided to make it a standalone, non-compatible implementation. Despite this, all credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which served as the inspiration for this mod.
-
-[b]Credits:[/b]
-All credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which inspired this mod. ZBBetterFPS provides a ZombieBuddy-based implementation that allows runtime configuration without requiring manual file replacement.
+Initially, I wanted to make ZBBetterFPS as an add-on to the original [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url]  mod. However, maintaining compatibility with both the mod's and game's code resulted in the implementation being too fragile. As a result, I decided to make it a standalone, non-compatible implementation. Despite this, all credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which served as the inspiration for this mod.
 
 [b]Links:[/b]
 [url=https://github.com/zed-0xff/ZBBetterFPS]GitHub Repository[/url]
@@ -56,4 +50,3 @@ All credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=34
 
 [b]☕ Support the Developer:[/b]
 [url=https://ko-fi.com/zed_0xff][img]https://i.imgur.com/Utx6OIH.png[/img][/url]
-
