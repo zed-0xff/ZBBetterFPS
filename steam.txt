@@ -27,7 +27,8 @@ Initially, I wanted to make ZBBetterFPS as an add-on to the original ZBetterFPS 
 All credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which inspired this mod. ZBBetterFPS provides a ZombieBuddy-based implementation that allows runtime configuration without requiring manual file replacement.
 
 [b]Links:[/b]
-[url=https://github.com/zed-0xff/ZBBetterFPS]GitHub Repository[/url] (if applicable)
+[url=https://github.com/zed-0xff/ZBBetterFPS]GitHub Repository[/url]
+[url=https://github.com/zed-0xff/ZombieBuddy]ZombieBuddy[/url] - Required framework
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] - Original mod by Alree
 
 [b]☕ Support the Developer:[/b]

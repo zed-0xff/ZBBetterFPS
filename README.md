@@ -50,9 +50,18 @@ Initially, I wanted to make ZBBetterFPS as an add-on to the original ZBetterFPS 
 
 All credits go to **[BetterFPS_B42](https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544)** by Alree, which inspired this mod. ZBBetterFPS provides a ZombieBuddy-based implementation that allows runtime configuration without requiring manual file replacement.
 
+## Related Mods
+
+Other mods built with ZombieBuddy:
+
+- **[ZombieBuddy](https://github.com/zed-0xff/ZombieBuddy)**: The framework this mod is built on
+- **[ZBHelloWorld](https://github.com/zed-0xff/ZBHelloWorld)**: A simple example mod demonstrating patches-only mods and UI patching
+- **[ZBetterWorkshopUpload](https://github.com/zed-0xff/ZBetterWorkshopUpload)**: Filters unwanted files from Steam Workshop uploads and provides upload previews
+- **[ZBMacOSHideMenuBar](https://github.com/zed-0xff/ZBMacOSHideMenuBar)**: Fixes the macOS menu bar issue in borderless windowed mode
+
 ## Links
 
-- **GitHub Repository**: https://github.com/zed-0xff/ZBBetterFPS (if applicable)
+- **GitHub Repository**: https://github.com/zed-0xff/ZBBetterFPS
 - **ZombieBuddy**: https://github.com/zed-0xff/ZombieBuddy
 - **BetterFPS_B42**: https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544
 
