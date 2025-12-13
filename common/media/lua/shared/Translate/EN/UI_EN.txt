@@ -1,0 +1,9 @@
+UI_EN = {
+    UI_options_ZBBetterFPS_renderDistance = "Render distance",
+    UI_options_ZBBetterFPS_renderDistance_desc = "Default is %1. Reload your save to apply.",
+    UI_options_ZBBetterFPS_uncappedFPS = "Uncapped FPS",
+    UI_options_ZBBetterFPS_uncappedFPS_desc = "Control uncapped FPS setting. Default: don't modify, Force Uncapped: set to true, Force Capped: set to false.",
+    UI_options_ZBBetterFPS_uncappedFPS_default = "Default",
+    UI_options_ZBBetterFPS_uncappedFPS_enabled = "Force Uncapped",
+    UI_options_ZBBetterFPS_uncappedFPS_disabled = "Force Capped",
+}

@@ -4,12 +4,35 @@ Optimize FPS by decreasing the number of rendered tiles through configurable ren
 
 [b]Features:[/b]
 [list]
+[*] Adjustable render distance from 24x24 to 312x312 tiles
 [*] Reduces the number of rendered tiles to improve FPS performance
+[*] Uncapped FPS control with tri-state configuration (Default/Force Uncapped/Force Capped)
 [*] Runtime patching using ZombieBuddy framework
+[*] Configurable through mod options menu
 [/list]
 
 [b]What it does:[/b]
-Allows you to reduce the render distance in Project Zomboid, which decreases the number of tiles rendered and can significantly improve FPS performance, especially on lower-end systems or in areas with many objects.
+Allows you to optimize FPS performance in Project Zomboid through two configurable options:
+[list]
+[*] [b]Render Distance[/b]: Adjust the number of rendered tiles to improve performance
+[*] [b]Uncapped FPS[/b]: Control the uncapped FPS setting with tri-state configuration
+[/list]
+
+[b]Render Distance Options:[/b]
+[list]
+[*] [b]Default[/b]: Uses the game's default calculation (based on your screen resolution, typically 152x152 tiles)
+[*] [b]Minimum[/b]: 24x24 tiles
+[*] [b]Maximum[/b]: 312x312 tiles
+[*] [b]Mod Default[/b]: 104x104 tiles - optimized for ~95% screen coverage at 2336x1460 resolution on minimal zoom
+[/list]
+
+[b]Uncapped FPS Options:[/b]
+[list]
+[*] [b]Default[/b]: Don't modify the uncapped FPS setting (leave it as configured in game options)
+[*] [b]Force Uncapped[/b]: Enable uncapped FPS
+[*] [b]Force Capped[/b]: Disable uncapped FPS
+[/list]
+The uncapped FPS setting takes effect immediately when applied through the mod options menu.
 
 [b]Important:[/b]
 [color=red]You must reload your savegame after changing the render distance setting for the changes to take effect.[/color] The render engine is initialized during the game load phase, so a savegame reload is required to apply the selected value.

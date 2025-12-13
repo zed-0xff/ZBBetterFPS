@@ -1,4 +1,0 @@
-UI_EN = {
-    UI_options_ZBBetterFPS = "Render distance",
-    UI_options_ZBBetterFPS_descr = "Reload your save to apply.",
-}

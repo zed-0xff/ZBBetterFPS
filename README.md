@@ -1,6 +1,6 @@
 # ZBBetterFPS
 
-A Project Zomboid mod that optimizes FPS by decreasing the number of rendered tiles through configurable render distance settings.
+A Project Zomboid mod that optimizes FPS through configurable render distance settings and optional uncapped FPS control.
 
 ## ☕ Support the Developer
 
@@ -10,13 +10,16 @@ If you find this mod useful, consider supporting the developer with a coffee!
 
 ## What It Does
 
-ZBBetterFPS allows you to reduce the render distance in Project Zomboid, which decreases the number of tiles rendered and can significantly improve FPS performance, especially on lower-end systems or in areas with many objects.
+ZBBetterFPS allows you to optimize FPS performance in Project Zomboid through two configurable options:
+- **Render Distance**: Reduce the number of rendered tiles to improve performance, especially on lower-end systems or in areas with many objects
+- **Uncapped FPS**: Optionally force enable or disable uncapped FPS settings
 
 ## Features
 
 - ✅ **FPS optimization**: Reduces the number of rendered tiles to improve performance
+- ✅ **Uncapped FPS control**: Tri-state configuration (Default/Force Uncapped/Force Capped) for uncapped FPS settings
 - ✅ **Runtime patching**: Uses ZombieBuddy to patch the game's render engine at runtime
-- ✅ **Non-intrusive**: Does not modify the `UncappedFPS` global setting
+- ✅ **Configurable**: All settings can be adjusted through the mod options menu
 
 ## Requirements
 
@@ -29,18 +32,47 @@ ZBBetterFPS allows you to reduce the render distance in Project Zomboid, which d
 
 ## Usage
 
-**Important**: You must reload your savegame after changing the render distance setting for the changes to take effect, as the render engine is initialized during the game load phase.
+### Render Distance
+The render distance slider allows you to adjust the number of rendered tiles:
+- **Default**: Uses the game's default calculation (based on your screen resolution, typically 152x152 tiles)
+- **Minimum**: 24x24 tiles
+- **Maximum**: 312x312 tiles
+
+**Default Setting**: The mod defaults to 104x104 tiles. This provides approximately 95% screen coverage at 2336x1460 resolution on minimal zoom, offering a good balance between performance and visual quality.
+
+**Important**: You must reload your savegame after changing the render distance setting for the changes to take effect, as the render engine is initialized during the game load phase. The mod options description will dynamically display the calculated default render distance for your screen resolution.
+
+### Uncapped FPS
+The uncapped FPS setting has three options:
+- **Default**: Don't modify the uncapped FPS setting (leave it as configured in game options)
+- **Force Uncapped**: Enable uncapped FPS by calling `SystemDisabler.setUncappedFPS(true)` and `getCore():setFramerate(1)`
+- **Force Capped**: Disable uncapped FPS by calling `SystemDisabler.setUncappedFPS(false)`
+
+The uncapped FPS setting takes effect immediately when applied through the mod options menu.
 
 ## How It Works
 
-ZBBetterFPS uses ZombieBuddy to patch the `IsoChunkMap.CalcChunkWidth` method, which controls the render distance.
+ZBBetterFPS uses ZombieBuddy to patch the `IsoChunkMap.CalcChunkWidth` method, which controls the render distance. Additionally, it provides a configuration option to control the uncapped FPS setting through `SystemDisabler.setUncappedFPS()` and `getCore():setFramerate()`.
 
 ## Technical Details
 
-- Render distance range: Extended from 16x16 to 400x400 (default: 128x128)
-- Patches `zombie.iso.IsoChunkMap.CalcChunkWidth` method
-- Uses ByteBuddy for runtime bytecode manipulation
-- Does not change the value of the `UncappedFPS` global setting
+- **Render Distance**:
+  - Range: Default (game default, typically 152x152 tiles) to 312x312 tiles
+  - Minimum size: 24x24 tiles
+  - Maximum size: 312x312 tiles
+  - Game default: 152x152 tiles
+  - Mod default: 104x104 tiles - optimized for ~95% screen coverage at 2336x1460 resolution on minimal zoom
+  - Default option uses the game's default calculation (same as `IsoChunkMap.CalcChunkWidth()`, typically 152x152 tiles)
+  - The description dynamically displays the calculated default render distance for your screen resolution
+  - Patches `zombie.iso.IsoChunkMap.CalcChunkWidth` method
+  - Uses ByteBuddy for runtime bytecode manipulation
+  - Values are converted to odd numbers internally (required for proper tile rendering)
+
+- **Uncapped FPS**:
+  - Tri-state configuration (Default/Force Uncapped/Force Capped)
+  - When Force Uncapped: Calls `SystemDisabler.setUncappedFPS(true)` and `getCore():setFramerate(1)`
+  - When Force Capped: Calls `SystemDisabler.setUncappedFPS(false)`
+  - When Default: No modification to the uncapped FPS setting
 
 ## Development History
 
