@@ -37,8 +37,15 @@ The uncapped FPS setting takes effect immediately when applied through the mod o
 [b]Important:[/b]
 [b]You must reload your savegame after changing the render distance setting for the changes to take effect.[/b] The render engine is initialized during the game load phase, so a savegame reload is required to apply the selected value.
 
+[b]📦 Installation:[/b]
+[list]
+[*] [b]No manual installation needed for ZBBetterFPS![/b] Just subscribe to this mod and enable it in the mod manager.
+[*] [b]You only need to install ZombieBuddy once[/b] (the required framework). See the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3378285185]ZombieBuddy[/url] mod page for installation instructions.
+[*] After ZombieBuddy is set up, all mods that use it (including ZBBetterFPS) will work automatically - just subscribe and enable them!
+[/list]
+
 [b]Requirements:[/b]
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3378285185]ZombieBuddy[/url] - Required framework
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3378285185]ZombieBuddy[/url] - Required framework (one-time installation)
 
 [b]Development History:[/b]
 Initially, I wanted to make ZBBetterFPS as an add-on to the original [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url]  mod. However, maintaining compatibility with both the mod's and game's code resulted in the implementation being too fragile. As a result, I decided to make it a standalone, non-compatible implementation. Despite this, all credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which served as the inspiration for this mod.
