@@ -1,5 +1,5 @@
 local MOD_ID   = "ZBBetterFPS"
-local MOD_NAME = "Zed's Better FPS Options"
+local MOD_NAME = "Zed's Better FPS"
 
 local config = {
     renderDistance = nil,

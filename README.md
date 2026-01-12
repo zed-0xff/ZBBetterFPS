@@ -87,6 +87,7 @@ All credits go to **[BetterFPS_B42](https://steamcommunity.com/sharedfiles/filed
 Other mods built with ZombieBuddy:
 
 - **[ZombieBuddy](https://github.com/zed-0xff/ZombieBuddy)**: The framework this mod is built on
+- **[ZBLuaPerfMon](https://github.com/zed-0xff/ZBLuaPerfMon)**: Real-time Lua performance monitoring and OSD
 - **[ZBHelloWorld](https://github.com/zed-0xff/ZBHelloWorld)**: A simple example mod demonstrating patches-only mods and UI patching
 - **[ZBetterWorkshopUpload](https://github.com/zed-0xff/ZBetterWorkshopUpload)**: Filters unwanted files from Steam Workshop uploads and provides upload previews
 - **[ZBMacOSHideMenuBar](https://github.com/zed-0xff/ZBMacOSHideMenuBar)**: Fixes the macOS menu bar issue in borderless windowed mode
