@@ -5,9 +5,7 @@ local config = {
     renderDistance = nil,
     uncappedFPS = nil,
     optimizeGridSquare = nil,
-    optimizeRainManager = nil,
     optimizeInventoryItem = nil,
-    optimizeIsoZombie = nil,
     optimizeIsoMovingObject = nil,
 }
 
@@ -77,16 +75,14 @@ config.renderDistance.onChange = function(self, newValue)
 end
 options:addDescription(getText("UI_options_ZBBetterFPS_renderDistance_desc", getDefaultRenderDistance()))
 
-config.optimizeGridSquare = options:addTickBox("optimizeGridSquare", "UI_options_ZBBetterFPS_optimizeGridSquare", true)
-config.optimizeRainManager = options:addTickBox("optimizeRainManager", "UI_options_ZBBetterFPS_optimizeRainManager", true)
-config.optimizeInventoryItem = options:addTickBox("optimizeInventoryItem", "UI_options_ZBBetterFPS_optimizeInventoryItem", true)
-config.optimizeIsoZombie = options:addTickBox("optimizeIsoZombie", "UI_options_ZBBetterFPS_optimizeIsoZombie", true)
-config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", true)
-
 config.uncappedFPS = options:addComboBox("uncappedFPS", "UI_options_ZBBetterFPS_uncappedFPS", "UI_options_ZBBetterFPS_uncappedFPS_desc")
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_default", true)
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_enabled", false)
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_disabled", false)
+
+config.optimizeGridSquare = options:addTickBox("optimizeGridSquare", "UI_options_ZBBetterFPS_optimizeGridSquare", true)
+config.optimizeInventoryItem = options:addTickBox("optimizeInventoryItem", "UI_options_ZBBetterFPS_optimizeInventoryItem", true)
+config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false)
 
 options.apply = function(self)
     print("[ZBBetterFPS] applying settings...")
@@ -138,9 +134,7 @@ options.apply = function(self)
     if ZBBetterFPS then
         if type(ZBBetterFPS.setOptimizeGridSquare) == "function" then
             ZBBetterFPS.setOptimizeGridSquare(config.optimizeGridSquare:getValue())
-            ZBBetterFPS.setOptimizeRainManager(config.optimizeRainManager:getValue())
             ZBBetterFPS.setOptimizeInventoryItem(config.optimizeInventoryItem:getValue())
-            ZBBetterFPS.setOptimizeIsoZombie(config.optimizeIsoZombie:getValue())
             ZBBetterFPS.setOptimizeIsoMovingObject(config.optimizeIsoMovingObject:getValue())
         end
     end

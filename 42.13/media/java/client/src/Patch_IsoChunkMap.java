@@ -4,7 +4,7 @@ import me.zed_0xff.zombie_buddy.Patch;
 import zombie.iso.IsoChunkMap;
 
 @Patch(className = "zombie.iso.IsoChunkMap", methodName = "CalcChunkWidth")
-public class Patch_setMaxRenderDistance {
+public class Patch_IsoChunkMap {
     @Patch.OnExit
     public static void exit() {
         if (ZBBetterFPS.g_MaxRenderDistance == 0) {
