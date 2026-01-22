@@ -1,59 +1,46 @@
 [h1]ZBBetterFPS[/h1]
 
-Optimize FPS by decreasing the number of rendered tiles through configurable render distance settings.
+A comprehensive performance overhaul for Project Zomboid that optimizes rendering, game logic, and CPU usage. Unlike traditional mods, ZBBetterFPS uses low-level runtime patching to fix performance bottlenecks deep within the game engine.
 
-[b]Features:[/b]
+[b]🚀 Key Optimizations:[/b]
 [list]
-[*] Adjustable render distance from 24x24 to 312x312 tiles
-[*] Reduces the number of rendered tiles to improve FPS performance
-[*] Uncapped FPS control with tri-state configuration (Default/Force Uncapped/Force Capped)
-[*] Runtime patching using ZombieBuddy framework
-[*] Configurable through mod options menu
+[*] [b]Smart Sprite Batching[/b]: Intelligently merges sprites and 3D models into fewer drawing commands, significantly reducing the load on your CPU.
+[*] [b]Graphics State Caching[/b]: Suppresses redundant graphics commands to ensure your GPU only receives necessary updates.
+[*] [b]Enhanced GPU Buffers[/b]: Increases internal render buffers to 1MB to reduce data transfer overhead between CPU and GPU.
+[*] [b]Faster 3D Models & Shaders[/b]: Optimizes the rendering of characters, items, and terrain through advanced data caching.
+[*] [b]Background CPU Throttling[/b]: Prevents the game from consuming 100% CPU when minimized or paused, keeping your PC cool while you're away.
+[*] [b]Adjustable Render Distance[/b]: Fine-tune how many tiles are rendered to match your hardware's capabilities.
+[*] [b]Streamlined Physics[/b]: Optimized math for object separation and physics updates to keep high-population areas running smoothly.
 [/list]
 
-[b]What it does:[/b]
-Allows you to optimize FPS performance in Project Zomboid through two configurable options:
+[b]⚙️ Configurable Features:[/b]
 [list]
-[*] [b]Render Distance[/b]: Adjust the number of rendered tiles to improve performance
-[*] [b]Uncapped FPS[/b]: Control the uncapped FPS setting with tri-state configuration
+[*] [b]IndieGL Optimization[/b]: Caches graphics states for smoother rendering.
+[*] [b]RingBuffer Optimization[/b]: Larger GPU buffers for heavy scenes (Requires restart).
+[*] [b]Render Distance[/b]: Adjust from 24x24 to 312x312 tiles (Default is ~152x152).
+[*] [b]Background Throttling[/b]: Saves power and CPU when the game is not in focus.
+[*] [b]Uncapped FPS Control[/b]: Choose between Default, Force Uncapped, or Force Capped.
 [/list]
 
-[b]Render Distance Options:[/b]
-[list]
-[*] [b]Default[/b]: Uses the game's default calculation (based on your screen resolution, typically 152x152 tiles)
-[*] [b]Minimum[/b]: 24x24 tiles
-[*] [b]Maximum[/b]: 312x312 tiles
-[*] [b]Mod Default[/b]: 104x104 tiles - optimized for ~95% screen coverage at 2336x1460 resolution on minimal zoom
-[/list]
-
-[b]Uncapped FPS Options:[/b]
-[list]
-[*] [b]Default[/b]: Don't modify the uncapped FPS setting (leave it as configured in game options)
-[*] [b]Force Uncapped[/b]: Enable uncapped FPS
-[*] [b]Force Capped[/b]: Disable uncapped FPS
-[/list]
-The uncapped FPS setting takes effect immediately when applied through the mod options menu.
-
-[b]Important:[/b]
-[b]You must reload your savegame after changing the render distance setting for the changes to take effect.[/b] The render engine is initialized during the game load phase, so a savegame reload is required to apply the selected value.
+[b]⚠️ Important:[/b]
+[b]A savegame reload is required[/b] after changing the [b]Render Distance[/b] setting for changes to take effect. The [b]RingBuffer[/b] optimization requires a full game restart.
 
 [b]📦 Installation:[/b]
 [list]
-[*] [b]No manual installation needed for ZBBetterFPS![/b] Just subscribe to this mod and enable it in the mod manager.
-[*] [b]You only need to install ZombieBuddy once[/b] (the required framework). See the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url] mod page for installation instructions.
-[*] After ZombieBuddy is set up, all mods that use it (including ZBBetterFPS) will work automatically - just subscribe and enable them!
+[*] [b]No manual installation needed for ZBBetterFPS![/b] Just subscribe and enable it in the mod manager.
+[*] [b]You only need to install ZombieBuddy once[/b] (the required framework). See the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url] mod page for instructions.
+[*] After ZombieBuddy is set up, all mods that use it will work automatically!
 [/list]
 
 [b]Requirements:[/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url] - Required framework (one-time installation)
 
-[b]Development History:[/b]
-Initially, I wanted to make ZBBetterFPS as an add-on to the original [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url]  mod. However, maintaining compatibility with both the mod's and game's code resulted in the implementation being too fragile. As a result, I decided to make it a standalone, non-compatible implementation. Despite this, all credits go to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] by Alree, which served as the inspiration for this mod.
+[b]Credits:[/b]
+Inspired by the original [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] mod by Alree. ZBBetterFPS provides a modern, runtime-patched implementation with additional low-level optimizations.
 
 [b]Links:[/b]
 [url=https://github.com/zed-0xff/ZBBetterFPS]GitHub Repository[/url]
-[url=https://github.com/zed-0xff/ZombieBuddy]ZombieBuddy[/url] - Required framework
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3423115544]BetterFPS_B42[/url] - Original mod by Alree
+[url=https://github.com/zed-0xff/ZombieBuddy]ZombieBuddy Framework[/url]
 
 [b]☕ Support the Developer:[/b]
 [url=https://ko-fi.com/zed_0xff][img]https://i.imgur.com/Utx6OIH.png[/img][/url]
