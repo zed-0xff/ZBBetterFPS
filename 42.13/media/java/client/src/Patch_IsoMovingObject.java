@@ -83,32 +83,38 @@ public class Patch_IsoMovingObject {
         IsoZombie thisZombie = (IsoZombie) Type.tryCastTo(self, IsoZombie.class);
 
         // Optimization 5: Scope Hoisting
-        float maxWeaponRange = (thisPlyr == null || !(thisPlyr.getPrimaryHandItem() instanceof HandWeapon)) ? 0.3f : ((HandWeapon) thisPlyr.getPrimaryHandItem()).getMaxRange();
+        float maxWeaponRange = (thisPlyr == null || !(thisPlyr.getPrimaryHandItem() instanceof HandWeapon)) ? 0.3f
+                : ((HandWeapon) thisPlyr.getPrimaryHandItem()).getMaxRange();
 
         IsoGridSquare currentSquare = self.getCurrentSquare();
-        if (currentSquare == null) return;
+        if (currentSquare == null)
+            return;
 
         // Optimization 6: Loop Clarification
         for (int i = 0; i <= 8; i++) {
             IsoGridSquare sq = i == 8 ? currentSquare : currentSquare.getSurroundingSquares()[i];
-            
-            if (sq != null && !sq.getMovingObjects().isEmpty() && (sq == currentSquare || !currentSquare.isBlockedTo(sq))) {
+
+            if (sq != null && !sq.getMovingObjects().isEmpty()
+                    && (sq == currentSquare || !currentSquare.isBlockedTo(sq))) {
                 int size = sq.getMovingObjects().size();
                 for (int n = 0; n < size; n++) {
                     IsoMovingObject obj = sq.getMovingObjects().get(n);
 
                     // Optimization 1: Identity & Early Z-check
-                    if (obj == self) continue;
-                    
+                    if (obj == self)
+                        continue;
+
                     // Fail fast on Z-axis difference
                     float dz = selfZ - obj.getZ();
-                    if (dz < -0.3f || dz > 0.3f) continue;
+                    if (dz < -0.3f || dz > 0.3f)
+                        continue;
 
-                    if (!obj.isSolidForSeparate()) continue;
+                    if (!obj.isSolidForSeparate())
+                        continue;
 
                     float dx = selfNextX - obj.getNextX();
                     float dy = selfNextY - obj.getNextY();
-                    
+
                     // Optimization 2: Squared Distance
                     float distSq = dx * dx + dy * dy;
                     float twidth = selfWidth + obj.getWidth();
@@ -128,7 +134,8 @@ public class Patch_IsoMovingObject {
                             continue;
                         }
 
-                        if (objChr == null) continue;
+                        if (objChr == null)
+                            continue;
 
                         IsoPlayer objPlyr = (IsoPlayer) Type.tryCastTo(obj, IsoPlayer.class);
                         IsoZombie objZombie = (IsoZombie) Type.tryCastTo(obj, IsoZombie.class);
@@ -139,7 +146,9 @@ public class Patch_IsoMovingObject {
                                 float len = (float) Math.sqrt(distSq);
                                 tempo.x = dx;
                                 tempo.y = dy;
-                                if (thisPlyr.getForwardDirection().angleBetween(tempo) > 2.6179938155736564d && thisPlyr.getBeenSprintingFor() >= 70.0f && WeaponType.getWeaponType(thisPlyr) == WeaponType.SPEAR) {
+                                if (thisPlyr.getForwardDirection().angleBetween(tempo) > 2.6179938155736564d
+                                        && thisPlyr.getBeenSprintingFor() >= 70.0f
+                                        && WeaponType.getWeaponType(thisPlyr) == WeaponType.SPEAR) {
                                     thisPlyr.reportEvent("ChargeSpearConnect");
                                     thisPlyr.setAttackType(AttackType.CHARGE);
                                     thisPlyr.setAttackStarted(true);
@@ -153,10 +162,12 @@ public class Patch_IsoMovingObject {
                         // Physical collision/bumping logic
                         if (distSq < twidthSq) {
                             boolean bump = false;
-                            if (thisPlyr != null && thisPlyr.getVariableFloat("WalkSpeed", 0.0f) > 0.2f && thisPlyr.runningTime > 0.5f && thisPlyr.getBumpedChr() != obj) {
+                            if (thisPlyr != null && thisPlyr.getVariableFloat("WalkSpeed", 0.0f) > 0.2f
+                                    && thisPlyr.runningTime > 0.5f && thisPlyr.getBumpedChr() != obj) {
                                 bump = true;
                             }
-                            if (GameClient.client && thisPlyr != null && (objChr instanceof IsoPlayer) && !ServerOptions.getInstance().playerBumpPlayer.getValue()) {
+                            if (GameClient.client && thisPlyr != null && (objChr instanceof IsoPlayer)
+                                    && !ServerOptions.getInstance().playerBumpPlayer.getValue()) {
                                 bump = false;
                             }
                             if (thisZombie != null && thisZombie.isReanimatedForGrappleOnly()) {
@@ -167,10 +178,15 @@ public class Patch_IsoMovingObject {
                             }
 
                             if (bump && !thisPlyr.isAttackType(AttackType.CHARGE)) {
-                                boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null || (System.currentTimeMillis() - thisPlyr.getLastBump()) / 100 < 15 || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
+                                boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
+                                        || (System.currentTimeMillis() - thisPlyr.getLastBump()) / 100 < 15
+                                        || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
                                 if (wasBumped) {
                                     thisChr.bumpNbr++;
-                                    int baseChance = (((10 - (thisChr.bumpNbr * 3)) + thisChr.getPerkLevel(PerkFactory.Perks.Fitness)) + thisChr.getPerkLevel(PerkFactory.Perks.Strength)) - (thisChr.getMoodles().getMoodleLevel(MoodleType.DRUNK) * 2);
+                                    int baseChance = (((10 - (thisChr.bumpNbr * 3))
+                                            + thisChr.getPerkLevel(PerkFactory.Perks.Fitness))
+                                            + thisChr.getPerkLevel(PerkFactory.Perks.Strength))
+                                            - (thisChr.getMoodles().getMoodleLevel(MoodleType.DRUNK) * 2);
                                     CharacterTraits characterTraits = thisChr.getCharacterTraits();
                                     if (characterTraits.get(CharacterTrait.CLUMSY)) baseChance -= 5;
                                     if (characterTraits.get(CharacterTrait.GRACEFUL)) baseChance += 5;
@@ -183,7 +199,8 @@ public class Patch_IsoMovingObject {
                                     if (part.getAdditionalPain(true) > 20.0f) {
                                         baseChance = (int) (baseChance - ((part.getAdditionalPain(true) - 20.0f) / 20.0f));
                                     }
-                                    if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0 || thisChr.isSprinting()) {
+                                    if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0
+                                            || thisChr.isSprinting()) {
                                         thisChr.setVariable("BumpDone", false);
                                         thisChr.setBumpFall(true);
                                         thisChr.setVariable("TripObstacleType", "zombie");
