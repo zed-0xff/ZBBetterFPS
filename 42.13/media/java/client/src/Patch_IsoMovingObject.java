@@ -28,12 +28,27 @@ import zombie.vehicles.BaseVehicle;
 
 import java.lang.reflect.Field;
 
+/**
+ * This patch provides an optimized implementation of IsoMovingObject.separate().
+ * 
+ * Separate is the core "pushing" and collision detection logic for every character in the game.
+ * It runs for every zombie and player against every other nearby object, making it a major bottleneck.
+ * 
+ * Optimizations:
+ * 1. Early Z-Axis Exit: Immediately skips collision checks if objects are on different heights.
+ * 2. Squared Distance Math: Replaces expensive Math.sqrt() with dx*dx + dy*dy comparisons.
+ * 3. Local Variable Caching: Caches self.getZ(), getNextX(), getWidth() etc. to avoid repeated method calls.
+ * 4. Identity Skip: Quickly skips self-comparison.
+ * 5. Lazy Type Casting: Moves expensive Type.tryCastTo() checks inside the proximity check.
+ * 6. Forward Direction Optimization: Uses direct X/Y components to avoid Vector2 object allocations.
+ */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject {
     public static Vector2 tempo;
 
     static {
         try {
+            // Access the private static tempo vector to avoid allocating a new one
             Field field = IsoMovingObject.class.getDeclaredField("tempo");
             field.setAccessible(true);
             tempo = (Vector2) field.get(null);
@@ -54,25 +69,15 @@ public class Patch_IsoMovingObject {
         return true;
     }
 
-    /**
-     * Optimized version of IsoMovingObject.separate()
-     * 
-     * Optimizations:
-     * 1. Identity & Early Z-check: Skipped objects early based on identity and Z-axis difference.
-     * 2. Squared Distance: Used squared distance (dx*dx + dy*dy) for proximity checks to avoid expensive Math.sqrt() calls.
-     * 3. Attribute Caching: Cached self.getZ(), self.getNextX(), self.getNextY(), and self.getWidth() in local variables.
-     * 4. Lazy Casting: Moved Type.tryCastTo() calls inside the distance check to avoid casting objects that are far away.
-     * 5. Scope Hoisting: Calculated maxWeaponRange once outside the loop instead of every iteration.
-     * 6. Loop Clarification: Refactored the while loop into a standard for loop.
-     */
     public static void optimized_separate(Object selfObj) {
         IsoMovingObject self = (IsoMovingObject) selfObj;
 
-        // Optimization 3: Attribute Caching
+        // Skip non-physical objects early
         if (!self.isSolidForSeparate() || !self.isPushableForSeparate()) {
             return;
         }
 
+        // Cache self attributes
         float selfZ = self.getZ();
         float selfNextX = self.getNextX();
         float selfNextY = self.getNextY();
@@ -82,7 +87,7 @@ public class Patch_IsoMovingObject {
         IsoPlayer thisPlyr = (IsoPlayer) Type.tryCastTo(self, IsoPlayer.class);
         IsoZombie thisZombie = (IsoZombie) Type.tryCastTo(self, IsoZombie.class);
 
-        // Optimization 5: Scope Hoisting
+        // Pre-calculate max weapon range once
         float maxWeaponRange = (thisPlyr == null || !(thisPlyr.getPrimaryHandItem() instanceof HandWeapon)) ? 0.3f
                 : ((HandWeapon) thisPlyr.getPrimaryHandItem()).getMaxRange();
 
@@ -90,21 +95,23 @@ public class Patch_IsoMovingObject {
         if (currentSquare == null)
             return;
 
-        // Optimization 6: Loop Clarification
+        long now = 0; // Lazily initialized if needed for bumping logic
+
+        // Iterate through surrounding squares (including current)
         for (int i = 0; i <= 8; i++) {
             IsoGridSquare sq = i == 8 ? currentSquare : currentSquare.getSurroundingSquares()[i];
-
+            
             if (sq != null && !sq.getMovingObjects().isEmpty()
                     && (sq == currentSquare || !currentSquare.isBlockedTo(sq))) {
+                
                 int size = sq.getMovingObjects().size();
                 for (int n = 0; n < size; n++) {
                     IsoMovingObject obj = sq.getMovingObjects().get(n);
 
-                    // Optimization 1: Identity & Early Z-check
                     if (obj == self)
                         continue;
 
-                    // Fail fast on Z-axis difference
+                    // Optimization 1: Fail fast on Z-axis difference
                     float dz = selfZ - obj.getZ();
                     if (dz < -0.3f || dz > 0.3f)
                         continue;
@@ -115,15 +122,16 @@ public class Patch_IsoMovingObject {
                     float dx = selfNextX - obj.getNextX();
                     float dy = selfNextY - obj.getNextY();
 
-                    // Optimization 2: Squared Distance
+                    // Optimization 2: Use squared distance to avoid Math.sqrt()
                     float distSq = dx * dx + dy * dy;
                     float twidth = selfWidth + obj.getWidth();
                     float twidthSq = twidth * twidth;
 
-                    // Optimization 4: Lazy Casting
-                    // Only cast if the distance is within range for either simple collision or weapon range
                     float range = twidth + maxWeaponRange;
-                    if (distSq < range * range) {
+                    float rangeSq = range * range;
+
+                    if (distSq < rangeSq) {
+                        // Optimization 5: Lazy casting only when objects are actually close
                         IsoGameCharacter objChr = (IsoGameCharacter) Type.tryCastTo(obj, IsoGameCharacter.class);
 
                         if (thisChr == null || (objChr == null && !(obj instanceof BaseVehicle))) {
@@ -131,7 +139,7 @@ public class Patch_IsoMovingObject {
                                 CollisionManager.instance.AddContact(self, obj);
                                 return;
                             }
-                            continue;
+                            return; 
                         }
 
                         if (objChr == null)
@@ -142,12 +150,16 @@ public class Patch_IsoMovingObject {
 
                         // Spear charge logic
                         if (thisPlyr != null && thisPlyr.getBumpedChr() != obj) {
-                            if (distSq < range * range) {
-                                float len = (float) Math.sqrt(distSq);
-                                tempo.x = dx;
-                                tempo.y = dy;
-                                if (thisPlyr.getForwardDirection().angleBetween(tempo) > 2.6179938155736564d
-                                        && thisPlyr.getBeenSprintingFor() >= 70.0f
+                            // Optimization 6: Avoid Vector2 allocation by using X/Y components
+                            float fwdX = thisPlyr.getForwardDirectionX();
+                            float fwdY = thisPlyr.getForwardDirectionY();
+                            float dot = (fwdX * dx) + (fwdY * dy);
+                            
+                            // cos(theta) = dot(A,B) / (|A|*|B|)
+                            double cos = (double) dot / Math.sqrt(distSq);
+
+                            if (cos < -0.866025d) { // > 150 degrees
+                                if (thisPlyr.getBeenSprintingFor() >= 70.0f
                                         && WeaponType.getWeaponType(thisPlyr) == WeaponType.SPEAR) {
                                     thisPlyr.reportEvent("ChargeSpearConnect");
                                     thisPlyr.setAttackType(AttackType.CHARGE);
@@ -178,8 +190,9 @@ public class Patch_IsoMovingObject {
                             }
 
                             if (bump && !thisPlyr.isAttackType(AttackType.CHARGE)) {
+                                if (now == 0) now = System.currentTimeMillis();
                                 boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
-                                        || (System.currentTimeMillis() - thisPlyr.getLastBump()) / 100 < 15
+                                        || (now - thisPlyr.getLastBump()) / 100 < 15
                                         || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
                                 if (wasBumped) {
                                     thisChr.bumpNbr++;
@@ -194,7 +207,7 @@ public class Patch_IsoMovingObject {
                                     if (characterTraits.get(CharacterTrait.UNDERWEIGHT)) baseChance -= 4;
                                     if (characterTraits.get(CharacterTrait.OBESE)) baseChance -= 8;
                                     if (characterTraits.get(CharacterTrait.OVERWEIGHT)) baseChance -= 4;
-
+                                    
                                     BodyPart part = thisChr.getBodyDamage().getBodyPart(BodyPartType.Torso_Lower);
                                     if (part.getAdditionalPain(true) > 20.0f) {
                                         baseChance = (int) (baseChance - ((part.getAdditionalPain(true) - 20.0f) / 20.0f));
@@ -208,7 +221,7 @@ public class Patch_IsoMovingObject {
                                 } else {
                                     thisChr.bumpNbr = 0;
                                 }
-                                thisChr.setLastBump(System.currentTimeMillis());
+                                thisChr.setLastBump(now);
                                 thisChr.setBumpedChr(objChr);
                                 thisChr.setBumpType(self.getBumpedType(objChr));
                                 boolean fromBehind = thisChr.isBehind(objChr);

@@ -1,13 +1,19 @@
 local MOD_ID   = "ZBBetterFPS"
 local MOD_NAME = "Zed's Better FPS"
 
+local isDebug = getCore():getDebug()
+
 local config = {
     renderDistance = nil,
     uncappedFPS = nil,
-    optimizeGridSquare = nil,
-    optimizeInventoryItem = nil,
+    optimizeIndieGL = nil,
+    optimizeSpriteBatching = nil,
+    optimizeRingBuffer = nil,
+    optimizeDefaultShader = nil,
+    optimize3DModels = nil,
     optimizeIsoMovingObject = nil,
     optimizeMainLoop = nil,
+    enableMetrics = nil,
 }
 
 local options = PZAPI.ModOptions:create(MOD_ID, MOD_NAME)
@@ -61,6 +67,14 @@ local function updateSlider(slider, newValue)
     label:setName_ZBBetterFPS(text)
 end
 
+config.optimizeIndieGL = options:addTickBox("optimizeIndieGL", "UI_options_ZBBetterFPS_optimizeIndieGL", false, "UI_options_ZBBetterFPS_optimizeIndieGL_desc")
+config.optimizeSpriteBatching = options:addTickBox("optimizeSpriteBatching", "UI_options_ZBBetterFPS_optimizeSpriteBatching", false, "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc")
+config.optimizeRingBuffer = options:addTickBox("optimizeRingBuffer", "UI_options_ZBBetterFPS_optimizeRingBuffer", false, "UI_options_ZBBetterFPS_optimizeRingBuffer_desc")
+config.optimizeDefaultShader = options:addTickBox("optimizeDefaultShader", "UI_options_ZBBetterFPS_optimizeDefaultShader", false, "UI_options_ZBBetterFPS_optimizeDefaultShader_desc")
+config.optimize3DModels = options:addTickBox("optimize3DModels", "UI_options_ZBBetterFPS_optimize3DModels", false, "UI_options_ZBBetterFPS_optimize3DModels_desc")
+config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false, "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc")
+config.optimizeMainLoop = options:addTickBox("optimizeMainLoop", "UI_options_ZBBetterFPS_optimizeMainLoop", false, "UI_options_ZBBetterFPS_optimizeMainLoop_desc")
+
 -- setting default to 6 => 104x104, 95% of screen in 2336x1460 resolution on minimal zoom
 config.renderDistance = options:addSlider("renderDistance", "UI_options_ZBBetterFPS_renderDistance", 0, 19, 1, 6)
 config.renderDistance.getValue = function(self)
@@ -81,10 +95,9 @@ config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_default", true)
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_enabled", false)
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_disabled", false)
 
-config.optimizeGridSquare = options:addTickBox("optimizeGridSquare", "UI_options_ZBBetterFPS_optimizeGridSquare", true, "UI_options_ZBBetterFPS_optimizeGridSquare_desc")
-config.optimizeInventoryItem = options:addTickBox("optimizeInventoryItem", "UI_options_ZBBetterFPS_optimizeInventoryItem", true, "UI_options_ZBBetterFPS_optimizeInventoryItem_desc")
-config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false, "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc")
-config.optimizeMainLoop = options:addTickBox("optimizeMainLoop", "UI_options_ZBBetterFPS_optimizeMainLoop", true, "UI_options_ZBBetterFPS_optimizeMainLoop_desc")
+if isDebug then
+    config.enableMetrics = options:addTickBox("enableMetrics", "UI_options_ZBBetterFPS_enableMetrics", false, "UI_options_ZBBetterFPS_enableMetrics_desc")
+end
 
 options.apply = function(self)
     print("[ZBBetterFPS] applying settings...")
@@ -134,11 +147,18 @@ options.apply = function(self)
     end
 
     if ZBBetterFPS then
-        if type(ZBBetterFPS.setOptimizeGridSquare) == "function" then
-            ZBBetterFPS.setOptimizeGridSquare(config.optimizeGridSquare:getValue())
-            ZBBetterFPS.setOptimizeInventoryItem(config.optimizeInventoryItem:getValue())
+        if type(ZBBetterFPS.setOptimizeIndieGL) == "function" then
+            ZBBetterFPS.setOptimizeIndieGL(config.optimizeIndieGL:getValue())
+            ZBBetterFPS.setOptimizeSpriteBatching(config.optimizeSpriteBatching:getValue())
+            ZBBetterFPS.setOptimizeRingBuffer(config.optimizeRingBuffer:getValue())
+            ZBBetterFPS.setOptimizeDefaultShader(config.optimizeDefaultShader:getValue())
+            ZBBetterFPS.setOptimize3DModels(config.optimize3DModels:getValue())
             ZBBetterFPS.setOptimizeIsoMovingObject(config.optimizeIsoMovingObject:getValue())
             ZBBetterFPS.setOptimizeMainLoop(config.optimizeMainLoop:getValue())
+
+            if ZBBetterFPS.setEnableMetrics and config.enableMetrics then
+                ZBBetterFPS.setEnableMetrics(config.enableMetrics:getValue())
+            end
         end
     end
 
