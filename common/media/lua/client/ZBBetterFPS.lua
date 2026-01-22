@@ -7,6 +7,7 @@ local config = {
     optimizeGridSquare = nil,
     optimizeInventoryItem = nil,
     optimizeIsoMovingObject = nil,
+    optimizeMainLoop = nil,
 }
 
 local options = PZAPI.ModOptions:create(MOD_ID, MOD_NAME)
@@ -80,9 +81,10 @@ config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_default", true)
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_enabled", false)
 config.uncappedFPS:addItem("UI_options_ZBBetterFPS_uncappedFPS_disabled", false)
 
-config.optimizeGridSquare = options:addTickBox("optimizeGridSquare", "UI_options_ZBBetterFPS_optimizeGridSquare", true)
-config.optimizeInventoryItem = options:addTickBox("optimizeInventoryItem", "UI_options_ZBBetterFPS_optimizeInventoryItem", true)
-config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false)
+config.optimizeGridSquare = options:addTickBox("optimizeGridSquare", "UI_options_ZBBetterFPS_optimizeGridSquare", true, "UI_options_ZBBetterFPS_optimizeGridSquare_desc")
+config.optimizeInventoryItem = options:addTickBox("optimizeInventoryItem", "UI_options_ZBBetterFPS_optimizeInventoryItem", true, "UI_options_ZBBetterFPS_optimizeInventoryItem_desc")
+config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false, "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc")
+config.optimizeMainLoop = options:addTickBox("optimizeMainLoop", "UI_options_ZBBetterFPS_optimizeMainLoop", true, "UI_options_ZBBetterFPS_optimizeMainLoop_desc")
 
 options.apply = function(self)
     print("[ZBBetterFPS] applying settings...")
@@ -136,6 +138,7 @@ options.apply = function(self)
             ZBBetterFPS.setOptimizeGridSquare(config.optimizeGridSquare:getValue())
             ZBBetterFPS.setOptimizeInventoryItem(config.optimizeInventoryItem:getValue())
             ZBBetterFPS.setOptimizeIsoMovingObject(config.optimizeIsoMovingObject:getValue())
+            ZBBetterFPS.setOptimizeMainLoop(config.optimizeMainLoop:getValue())
         end
     end
 

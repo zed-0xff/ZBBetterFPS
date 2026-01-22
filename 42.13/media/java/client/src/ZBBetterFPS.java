@@ -6,6 +6,7 @@ public class ZBBetterFPS {
     public static boolean g_OptimizeGridSquare = false;
     public static boolean g_OptimizeInventoryItem = false;
     public static boolean g_OptimizeIsoMovingObject = false;
+    public static boolean g_OptimizeMainLoop = false;
 
     public static void setMaxRenderDistance(int distance) {
         g_MaxRenderDistance = (short) distance;
@@ -14,4 +15,5 @@ public class ZBBetterFPS {
     public static void setOptimizeGridSquare(boolean b) { g_OptimizeGridSquare = b; }
     public static void setOptimizeInventoryItem(boolean b) { g_OptimizeInventoryItem = b; }
     public static void setOptimizeIsoMovingObject(boolean b) { g_OptimizeIsoMovingObject = b; }
-    }
+    public static void setOptimizeMainLoop(boolean b) { g_OptimizeMainLoop = b; }
+}
