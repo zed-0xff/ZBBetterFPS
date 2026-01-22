@@ -6,4 +6,9 @@ UI_EN = {
     UI_options_ZBBetterFPS_uncappedFPS_default = "Default",
     UI_options_ZBBetterFPS_uncappedFPS_enabled = "Force Uncapped",
     UI_options_ZBBetterFPS_uncappedFPS_disabled = "Force Capped",
+    UI_options_ZBBetterFPS_optimizeGridSquare = "Optimize GridSquare (BlendFunc caching)",
+    UI_options_ZBBetterFPS_optimizeRainManager = "Optimize RainManager (isRaining boxing)",
+    UI_options_ZBBetterFPS_optimizeInventoryItem = "Optimize InventoryItem (update logic)",
+    UI_options_ZBBetterFPS_optimizeIsoZombie = "Optimize IsoZombie (ActionGroup lookup)",
+    UI_options_ZBBetterFPS_optimizeIsoMovingObject = "Optimize IsoMovingObject (separate logic)",
 }
