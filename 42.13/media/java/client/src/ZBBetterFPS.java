@@ -13,7 +13,7 @@ public class ZBBetterFPS {
     public static boolean g_EnableMetrics = false;
 
     public static void setMaxRenderDistance(int distance) {
-        g_MaxRenderDistance = (short) distance;
+        g_MaxRenderDistance = distance;
     }
 
     public static void setOptimizeIndieGL(boolean b) { g_OptimizeIndieGL = b; }

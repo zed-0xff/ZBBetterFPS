@@ -75,8 +75,8 @@ config.optimize3DModels = options:addTickBox("optimize3DModels", "UI_options_ZBB
 config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false, "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc")
 config.optimizeMainLoop = options:addTickBox("optimizeMainLoop", "UI_options_ZBBetterFPS_optimizeMainLoop", false, "UI_options_ZBBetterFPS_optimizeMainLoop_desc")
 
--- setting default to 6 => 104x104, 95% of screen in 2336x1460 resolution on minimal zoom
-config.renderDistance = options:addSlider("renderDistance", "UI_options_ZBBetterFPS_renderDistance", 0, 19, 1, 6)
+-- default to 0 = use game default render distance
+config.renderDistance = options:addSlider("renderDistance", "UI_options_ZBBetterFPS_renderDistance", 0, 19, 1, 0)
 config.renderDistance.getValue = function(self)
     updateSlider(self, self.value)
     return self.value

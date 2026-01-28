@@ -14,13 +14,13 @@ public class Patch_MainLoop {
             if (!ZBBetterFPS.g_OptimizeMainLoop) return;
 
             try {
+                // Only throttle main thread when paused AND unfocused together
+                // This avoids the false positive from Display.isActive() in fullscreen/borderless
                 boolean isPaused = GameTime.isGamePaused();
                 boolean isFocused = Display.isActive();
                 
-                if (!isFocused) {
-                    Thread.sleep(32); // ~30 FPS in background
-                } else if (isPaused) {
-                    Thread.sleep(16); // ~60 FPS when paused
+                if (!isFocused && isPaused) {
+                    Thread.sleep(32); // ~30 FPS when minimized and paused
                 }
             } catch (InterruptedException e) {
                 // Ignore
@@ -35,10 +35,13 @@ public class Patch_MainLoop {
             if (!ZBBetterFPS.g_OptimizeMainLoop) return;
 
             try {
-                if (!Display.isActive()) {
-                    Thread.sleep(32); // ~30 FPS in background
-                } else if (GameTime.isGamePaused()) {
-                    Thread.sleep(8); // ~120 FPS max when paused
+                boolean isFocused = Display.isActive();
+                boolean isPaused = GameTime.isGamePaused();
+                
+                // Only throttle render thread when truly in background (unfocused AND paused)
+                // Display.isActive() can return false incorrectly in borderless/fullscreen modes
+                if (!isFocused && isPaused) {
+                    Thread.sleep(16); // ~60 FPS when minimized and paused
                 }
             } catch (InterruptedException e) {
                 // Ignore
@@ -56,10 +59,12 @@ public class Patch_MainLoop {
             if (IsoWorld.instance == null || IsoWorld.instance.currentCell == null) return;
 
             try {
-                if (!Display.isActive()) {
-                    Thread.sleep(100); 
-                } else if (GameTime.isGamePaused()) {
-                    Thread.sleep(50);
+                boolean isFocused = Display.isActive();
+                boolean isPaused = GameTime.isGamePaused();
+                
+                // Only throttle lighting thread when truly in background
+                if (!isFocused && isPaused) {
+                    Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
                 // Ignore
