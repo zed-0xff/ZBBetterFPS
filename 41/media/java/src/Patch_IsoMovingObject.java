@@ -6,10 +6,8 @@ import zombie.characters.BodyDamage.BodyPart;
 import zombie.characters.BodyDamage.BodyPartType;
 import zombie.characters.IsoGameCharacter;
 import zombie.characters.IsoPlayer;
-import zombie.characters.IsoZombie;
 import zombie.characters.skills.PerkFactory;
 import zombie.CollisionManager;
-import zombie.core.math.PZMath;
 import zombie.core.Rand;
 import zombie.inventory.types.HandWeapon;
 import zombie.inventory.types.WeaponType;
@@ -19,7 +17,6 @@ import zombie.iso.Vector2;
 import zombie.network.GameClient;
 import zombie.network.GameServer;
 import zombie.network.ServerOptions;
-import zombie.characters.Moodles.MoodleType;
 import zombie.util.Type;
 import zombie.vehicles.BaseVehicle;
 
@@ -69,60 +66,91 @@ public class Patch_IsoMovingObject {
     public static void optimized_separate(Object selfObj) {
         IsoMovingObject self = (IsoMovingObject) selfObj;
 
-        // Skip non-physical objects early
         if (!self.isSolidForSeparate() || !self.isPushableForSeparate()) {
             return;
         }
 
-        float maxRange;
         IsoGameCharacter isoGameCharacter = (IsoGameCharacter) Type.tryCastTo(self, IsoGameCharacter.class);
         IsoPlayer isoPlayer = (IsoPlayer) Type.tryCastTo(self, IsoPlayer.class);
         if (self.z < 0.0f) {
             self.z = 0.0f;
         }
 
-        IsoGridSquare currentSquare = self.getCurrentSquare();
+        // Cache per-self values (avoids repeated getters in hot loop)
+        final float selfWidth = self.getWidth();
+        final float selfZ = self.z;
+        final float selfNx = self.nx;
+        final float selfNy = self.ny;
+        final IsoGridSquare currentSquare = self.getCurrentSquare();
 
-        int i = 0;
-        while (i <= 8) {
-            IsoGridSquare isoGridSquare = i == 8 ? currentSquare : currentSquare.nav[i];
-            if (isoGridSquare != null && !isoGridSquare.getMovingObjects().isEmpty() && (isoGridSquare == currentSquare || !currentSquare.isBlockedTo(isoGridSquare))) {
-                if (isoPlayer != null && (isoPlayer.getPrimaryHandItem() instanceof HandWeapon)) {
-                    maxRange = ((HandWeapon) isoPlayer.getPrimaryHandItem()).getMaxRange();
-                } else {
-                    maxRange = 0.3f;
+        // Max range depends only on self; compute once
+        final float maxRange = (isoPlayer != null && (isoPlayer.getPrimaryHandItem() instanceof HandWeapon))
+                ? ((HandWeapon) isoPlayer.getPrimaryHandItem()).getMaxRange()
+                : 0.3f;
+
+        for (int i = 0; i <= 8; i++) {
+            IsoGridSquare isoGridSquare = (i == 8) ? currentSquare : currentSquare.nav[i];
+            if (isoGridSquare == null || isoGridSquare.getMovingObjects().isEmpty()) {
+                continue;
+            }
+            if (isoGridSquare != currentSquare && currentSquare.isBlockedTo(isoGridSquare)) {
+                continue;
+            }
+
+            java.util.ArrayList<IsoMovingObject> movingObjects = isoGridSquare.getMovingObjects();
+            final int size = movingObjects.size();
+            for (int i2 = 0; i2 < size; i2++) {
+                IsoMovingObject isoMovingObject = movingObjects.get(i2);
+                if (isoMovingObject == self || !isoMovingObject.isSolidForSeparate()) {
+                    continue;
                 }
-                float f = maxRange;
-                int size = isoGridSquare.getMovingObjects().size();
-                for (int i2 = 0; i2 < size; i2++) {
-                    IsoMovingObject isoMovingObject = isoGridSquare.getMovingObjects().get(i2);
-                    if (isoMovingObject != self && isoMovingObject.isSolidForSeparate() && Math.abs(self.z - isoMovingObject.z) <= 0.3f) {
-                        IsoGameCharacter isoGameCharacter2 = (IsoGameCharacter) Type.tryCastTo(isoMovingObject, IsoGameCharacter.class);
-                        IsoPlayer isoPlayer2 = (IsoPlayer) Type.tryCastTo(isoMovingObject, IsoPlayer.class);
-                        float f2 = self.getWidth() + isoMovingObject.getWidth();
-                        Vector2 vector2 = tempo;
-                        vector2.x = self.nx - isoMovingObject.nx;
-                        vector2.y = self.ny - isoMovingObject.ny;
-                        float length = vector2.getLength();
-                        if (isoGameCharacter == null || (isoGameCharacter2 == null && !(isoMovingObject instanceof BaseVehicle))) {
-                            if (length < f2) {
-                                CollisionManager.instance.AddContact(self, isoMovingObject);
-                                return;
-                            }
-                            return;
-                        }
-                        if (isoGameCharacter2 == null) {
-                            continue;
-                        } else {
-                            if (isoPlayer != null && isoPlayer.getBumpedChr() != isoMovingObject && length < f2 + f && isoPlayer.getForwardDirection().angleBetween(vector2) > 2.6179938155736564d && isoPlayer.getBeenSprintingFor() >= 70.0f && WeaponType.getWeaponType(isoPlayer) == WeaponType.spear) {
-                                isoPlayer.reportEvent("ChargeSpearConnect");
-                                isoPlayer.setAttackType("charge");
-                                isoPlayer.attackStarted = true;
-                                isoPlayer.setVariable("StartedAttackWhileSprinting", true);
-                                isoPlayer.setBeenSprintingFor(0.0f);
-                                return;
-                            }
-                            if (length < f2) {
+                if (Math.abs(selfZ - isoMovingObject.z) > 0.3f) {
+                    continue;
+                }
+
+                float f2 = selfWidth + isoMovingObject.getWidth();
+                float dx = selfNx - isoMovingObject.nx;
+                float dy = selfNy - isoMovingObject.ny;
+                float lengthSq = dx * dx + dy * dy;
+                float f2Sq = f2 * f2;
+
+                boolean otherIsCharacter = isoMovingObject instanceof IsoGameCharacter;
+                boolean otherIsVehicle = isoMovingObject instanceof BaseVehicle;
+                // Self not character, or other is neither character nor vehicle: simple contact then return
+                if (isoGameCharacter == null || (!otherIsCharacter && !otherIsVehicle)) {
+                    if (lengthSq < f2Sq) {
+                        CollisionManager.instance.AddContact(self, isoMovingObject);
+                    }
+                    return;
+                }
+
+                if (!otherIsCharacter) {
+                    continue;
+                }
+                IsoGameCharacter isoGameCharacter2 = (IsoGameCharacter) isoMovingObject;
+                IsoPlayer isoPlayer2 = (isoMovingObject instanceof IsoPlayer) ? (IsoPlayer) isoMovingObject : null;
+
+                // Need real length only when in range for charge or collision
+                float rangeSq = (f2 + maxRange) * (f2 + maxRange);
+                if (lengthSq >= rangeSq) {
+                    continue;
+                }
+                Vector2 vector2 = tempo;
+                vector2.x = dx;
+                vector2.y = dy;
+                float length = (float) Math.sqrt(lengthSq);
+
+                if (isoPlayer != null && isoPlayer.getBumpedChr() != isoMovingObject && length < f2 + maxRange
+                        && isoPlayer.getForwardDirection().angleBetween(vector2) > 2.6179938155736564d
+                        && isoPlayer.getBeenSprintingFor() >= 70.0f && WeaponType.getWeaponType(isoPlayer) == WeaponType.spear) {
+                    isoPlayer.reportEvent("ChargeSpearConnect");
+                    isoPlayer.setAttackType("charge");
+                    isoPlayer.attackStarted = true;
+                    isoPlayer.setVariable("StartedAttackWhileSprinting", true);
+                    isoPlayer.setBeenSprintingFor(0.0f);
+                    return;
+                }
+                if (length < f2) {
                                 boolean z = false;
                                 if (isoPlayer != null && isoPlayer.getVariableFloat("WalkSpeed", 0.0f) > 0.2f && isoPlayer.runningTime > 0.5f && isoPlayer.getBumpedChr() != isoMovingObject) {
                                     z = true;
@@ -193,10 +221,6 @@ public class Patch_IsoMovingObject {
                                 }
                             }
                         }
-                    }
-                }
             }
-            i++;
-        }
     }
 }
