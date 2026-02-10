@@ -1,5 +1,8 @@
 package me.zed_0xff.zb_better_fps;
 
+import me.zed_0xff.zombie_buddy.Exposer;
+
+@Exposer.LuaClass
 public class ZBBetterFPS {
     // g_LowerCPUMode values
     public static final int CPU_MODE_PAUSED_OR_BG  = 1; // when paused OR background

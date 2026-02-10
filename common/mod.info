@@ -9,3 +9,4 @@ incompatible=\BetterFPS_B42
 require=\ZombieBuddy
 javaJarFile=media/java/client/build/libs/client.jar
 javaPkgName=me.zed_0xff.zb_better_fps
+ZBVersionMin=1.6.0

@@ -6,7 +6,7 @@ def GAME_JAVA_DIR = "${GAME_DIR}/Contents/Java"
 
 dependencies {
     compileOnly files("${GAME_JAVA_DIR}/ZombieBuddy.jar")
-    compileOnly files(GAME_JAVA_DIR)
+    compileOnly files("${HOME_DIR}/projects/zomboid/42.12/java")
 }
 
 java {

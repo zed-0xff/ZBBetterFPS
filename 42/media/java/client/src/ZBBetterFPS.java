@@ -1,9 +1,11 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Patch;
-
 import zombie.iso.IsoChunkMap;
 
+import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.Exposer;
+
+@Exposer.LuaClass
 public class ZBBetterFPS {
     public static int g_MaxRenderDistance = 0; // 0 = default value
 
