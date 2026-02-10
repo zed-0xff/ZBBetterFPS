@@ -1,6 +1,12 @@
 package me.zed_0xff.zb_better_fps;
 
 public class ZBBetterFPS {
+    // g_LowerCPUMode values
+    public static final int CPU_MODE_PAUSED_OR_BG  = 1; // when paused OR background
+    public static final int CPU_MODE_PAUSED_AND_BG = 2; // when paused AND background (default)
+    public static final int CPU_MODE_ALWAYS         = 3; // always
+    public static final int CPU_MODE_NEVER          = 4; // never
+
     public static int g_MaxRenderDistance = 0; // 0 = default value
 
     public static boolean g_OptimizeIndieGL = false;
@@ -9,7 +15,7 @@ public class ZBBetterFPS {
     public static boolean g_OptimizeDefaultShader = false;
     public static boolean g_Optimize3DModels = false;
     public static boolean g_OptimizeIsoMovingObject = false;
-    public static boolean g_OptimizeMainLoop = false;
+    public static int g_LowerCPUMode = CPU_MODE_PAUSED_AND_BG;
     public static boolean g_EnableMetrics = false;
 
     public static void setMaxRenderDistance(int distance) {
@@ -22,6 +28,6 @@ public class ZBBetterFPS {
     public static void setOptimizeDefaultShader(boolean b) { g_OptimizeDefaultShader = b; }
     public static void setOptimize3DModels(boolean b) { g_Optimize3DModels = b; }
     public static void setOptimizeIsoMovingObject(boolean b) { g_OptimizeIsoMovingObject = b; }
-    public static void setOptimizeMainLoop(boolean b) { g_OptimizeMainLoop = b; }
+    public static void setLowerCPUMode(int mode) { g_LowerCPUMode = mode; }
     public static void setEnableMetrics(boolean b) { g_EnableMetrics = b; }
 }

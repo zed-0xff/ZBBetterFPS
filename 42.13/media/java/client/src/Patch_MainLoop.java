@@ -3,24 +3,75 @@ package me.zed_0xff.zb_better_fps;
 import me.zed_0xff.zombie_buddy.Patch;
 import org.lwjglx.opengl.Display;
 import zombie.GameTime;
-import zombie.iso.IsoWorld;
+import zombie.core.PerformanceSettings;
 
 public class Patch_MainLoop {
 
+    // Frame timing for "always" mode
+    public static long renderFrameStart = 0;
+    public static long mainFrameStart = 0;
+
+    // Returns true if game is paused AND in background (for longer sleeps)
+    // In "always" mode, only check if paused (ignore window focus)
+    public static boolean isFullyInactive() {
+        if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS) {
+            return !Utils.isGameStarted() || GameTime.isGamePaused();
+        }
+        return GameTime.isGamePaused() && !Display.isActive();
+    }
+
+    public static boolean shouldThrottle() {
+        int mode = ZBBetterFPS.g_LowerCPUMode;
+        if (mode == ZBBetterFPS.CPU_MODE_NEVER)  return false;
+        if (mode == ZBBetterFPS.CPU_MODE_ALWAYS) return true;
+        
+        boolean isFocused = Display.isActive();
+        boolean isPaused = GameTime.isGamePaused();
+        
+        if (mode == ZBBetterFPS.CPU_MODE_PAUSED_OR_BG) {
+            // when paused OR background (more aggressive)
+            return isPaused || !isFocused;
+        } else if (mode == ZBBetterFPS.CPU_MODE_PAUSED_AND_BG) {
+            // when paused AND background (conservative, default)
+            return isPaused && !isFocused;
+        }
+        return false;
+    }
+
+    // Calculate safe sleep time based on target FPS and elapsed frame time
+    public static long calcSleepTime(long frameStartNanos) {
+        int framerate = PerformanceSettings.instance.getFramerate();
+        if (framerate <= 1) return 1; // uncapped, minimal sleep
+        
+        long targetFrameTimeNanos = 1_000_000_000L / framerate;
+        long elapsedNanos = System.nanoTime() - frameStartNanos;
+        long remainingNanos = targetFrameTimeNanos - elapsedNanos;
+        
+        // Convert to ms, leave 2ms buffer for scheduling variance
+        long sleepMs = (remainingNanos / 1_000_000L) - 2;
+        return Math.max(1, sleepMs);
+    }
+
     @Patch(className = "zombie.GameWindow", methodName = "mainThreadStep")
     public static class GameWindowPatch {
+        @Patch.OnEnter
+        public static void onEnter() {
+            if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS) {
+                mainFrameStart = System.nanoTime();
+            }
+        }
+
         @Patch.OnExit
         public static void onExit() {
-            if (!ZBBetterFPS.g_OptimizeMainLoop) return;
+            if (!shouldThrottle()) return;
 
             try {
-                // Only throttle main thread when paused AND unfocused together
-                // This avoids the false positive from Display.isActive() in fullscreen/borderless
-                boolean isPaused = GameTime.isGamePaused();
-                boolean isFocused = Display.isActive();
-                
-                if (!isFocused && isPaused) {
-                    Thread.sleep(32); // ~30 FPS when minimized and paused
+                if (isFullyInactive()) {
+                    Thread.sleep(32);
+                } else if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS && mainFrameStart > 0) {
+                    Thread.sleep(calcSleepTime(mainFrameStart));
+                } else {
+                    Thread.sleep(1);
                 }
             } catch (InterruptedException e) {
                 // Ignore
@@ -30,18 +81,24 @@ public class Patch_MainLoop {
 
     @Patch(className = "zombie.core.opengl.RenderThread", methodName = "renderStep")
     public static class RenderThreadStepPatch {
+        @Patch.OnEnter
+        public static void onEnter() {
+            if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS) {
+                renderFrameStart = System.nanoTime();
+            }
+        }
+
         @Patch.OnExit
         public static void onExit() {
-            if (!ZBBetterFPS.g_OptimizeMainLoop) return;
+            if (!shouldThrottle()) return;
 
             try {
-                boolean isFocused = Display.isActive();
-                boolean isPaused = GameTime.isGamePaused();
-                
-                // Only throttle render thread when truly in background (unfocused AND paused)
-                // Display.isActive() can return false incorrectly in borderless/fullscreen modes
-                if (!isFocused && isPaused) {
-                    Thread.sleep(16); // ~60 FPS when minimized and paused
+                if (isFullyInactive()) {
+                    Thread.sleep(16);
+                } else if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS && renderFrameStart > 0) {
+                    Thread.sleep(calcSleepTime(renderFrameStart));
+                } else {
+                    Thread.sleep(1);
                 }
             } catch (InterruptedException e) {
                 // Ignore
@@ -53,19 +110,13 @@ public class Patch_MainLoop {
     public static class LightingThreadPatch {
         @Patch.OnExit
         public static void onExit() {
-            if (!ZBBetterFPS.g_OptimizeMainLoop) return;
+            if (!shouldThrottle()) return;
 
             // Only throttle if the game world is loaded
-            if (IsoWorld.instance == null || IsoWorld.instance.currentCell == null) return;
+            if (!Utils.isGameStarted()) return;
 
             try {
-                boolean isFocused = Display.isActive();
-                boolean isPaused = GameTime.isGamePaused();
-                
-                // Only throttle lighting thread when truly in background
-                if (!isFocused && isPaused) {
-                    Thread.sleep(100);
-                }
+                Thread.sleep(isFullyInactive() ? 100 : 1);
             } catch (InterruptedException e) {
                 // Ignore
             }

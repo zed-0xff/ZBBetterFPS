@@ -12,7 +12,7 @@ local config = {
     optimizeDefaultShader = nil,
     optimize3DModels = nil,
     optimizeIsoMovingObject = nil,
-    optimizeMainLoop = nil,
+    lowerCPUMode = nil,
     enableMetrics = nil,
 }
 
@@ -73,7 +73,12 @@ config.optimizeRingBuffer = options:addTickBox("optimizeRingBuffer", "UI_options
 config.optimizeDefaultShader = options:addTickBox("optimizeDefaultShader", "UI_options_ZBBetterFPS_optimizeDefaultShader", false, "UI_options_ZBBetterFPS_optimizeDefaultShader_desc")
 config.optimize3DModels = options:addTickBox("optimize3DModels", "UI_options_ZBBetterFPS_optimize3DModels", false, "UI_options_ZBBetterFPS_optimize3DModels_desc")
 config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false, "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc")
-config.optimizeMainLoop = options:addTickBox("optimizeMainLoop", "UI_options_ZBBetterFPS_optimizeMainLoop", false, "UI_options_ZBBetterFPS_optimizeMainLoop_desc")
+
+config.lowerCPUMode = options:addComboBox("lowerCPUMode", "UI_options_ZBBetterFPS_lowerCPUMode", "UI_options_ZBBetterFPS_lowerCPUMode_desc")
+config.lowerCPUMode:addItem("UI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground", false)
+config.lowerCPUMode:addItem("UI_options_ZBBetterFPS_lowerCPUMode_pausedAndBackground", true)
+config.lowerCPUMode:addItem("UI_options_ZBBetterFPS_lowerCPUMode_always", false)
+config.lowerCPUMode:addItem("UI_options_ZBBetterFPS_lowerCPUMode_never", false)
 
 -- default to 0 = use game default render distance
 config.renderDistance = options:addSlider("renderDistance", "UI_options_ZBBetterFPS_renderDistance", 0, 19, 1, 0)
@@ -154,7 +159,7 @@ options.apply = function(self)
             ZBBetterFPS.setOptimizeDefaultShader(config.optimizeDefaultShader:getValue())
             ZBBetterFPS.setOptimize3DModels(config.optimize3DModels:getValue())
             ZBBetterFPS.setOptimizeIsoMovingObject(config.optimizeIsoMovingObject:getValue())
-            ZBBetterFPS.setOptimizeMainLoop(config.optimizeMainLoop:getValue())
+            ZBBetterFPS.setLowerCPUMode(config.lowerCPUMode:getValue())
 
             if ZBBetterFPS.setEnableMetrics and config.enableMetrics then
                 ZBBetterFPS.setEnableMetrics(config.enableMetrics:getValue())
