@@ -5,7 +5,7 @@ def osName = System.getProperty("os.name").toLowerCase()
 def HOME_DIR = System.getProperty("user.home")
 
 def CUR_GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app/Contents/Java"
-def GAME_DIR_B41 = "${HOME_DIR}/projects/zomboid/41.78"
+def GAME_DIR_B41 = "${HOME_DIR}/projects/zomboid/versions/41"
 
 dependencies {
     compileOnly files("${CUR_GAME_DIR}/ZombieBuddy.jar")

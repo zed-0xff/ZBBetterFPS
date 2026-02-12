@@ -1,0 +1,21 @@
+---
+# ZBSpec configuration (created by zbspec --init)
+
+startup_timeout: 120
+auto_shutdown: false
+#game_path: /Applications/Project Zomboid.app
+debug: true
+spec_glob: spec/**/*_spec.lua
+
+# Your mod(s) to test (ZombieBuddy and ZBSpec are auto-included).
+# Note: mod 'id' is case-sensitive (must match the id= in the mod's mod.info).
+mods:
+  - { id: "ZBBetterFPS", path: "." }
+  - { id: "modoptions", steam_id: 2169435993 } # only for B41
+
+game_versions_root: "~/projects/zomboid/versions"
+game_versions:
+  - 41
+  - 42.12
+  - 42.13
+  - unstable

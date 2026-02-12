@@ -27,6 +27,10 @@ dependencies {
     compileOnly files(GAME_JAR)
 }
 
+jar {
+    archiveBaseName.set("ZBBetterFPS")
+}
+
 repositories {
     mavenCentral()
     gradlePluginPortal()
