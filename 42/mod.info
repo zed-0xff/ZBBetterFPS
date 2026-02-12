@@ -4,6 +4,7 @@ icon=icon_64.png
 poster=icon_256.png
 description=Optimize FPS by decreasing the number of rendered tiles.
 
+versionMin=42.0
 incompatible=\BetterFPS_B42
 
 require=\ZombieBuddy
