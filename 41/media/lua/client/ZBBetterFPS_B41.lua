@@ -35,8 +35,6 @@ local chunk = {
         optimizeIndieGL = false,
         optimizeSpriteBatching = false,
         optimizeRingBuffer = false,
-        optimizeDefaultShader = false,
-        optimize3DModels = false,
         optimizeIsoMovingObject = false,
         lowerCPUMode = 1,       -- 1-based index: 1=pausedOrBackground, 2=pausedAndBackground, 3=always, 4=never
         renderDistance = 1,     -- 1-based index: 1=default, 2-20=slider 1-19
@@ -47,8 +45,6 @@ local chunk = {
         optimizeIndieGL = { name = "IGUI_options_ZBBetterFPS_optimizeIndieGL", tooltip = "IGUI_options_ZBBetterFPS_optimizeIndieGL_desc" },
         optimizeSpriteBatching = { name = "IGUI_options_ZBBetterFPS_optimizeSpriteBatching", tooltip = "IGUI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
         optimizeRingBuffer = { name = "IGUI_options_ZBBetterFPS_optimizeRingBuffer", tooltip = "IGUI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
-        optimizeDefaultShader = { name = "IGUI_options_ZBBetterFPS_optimizeDefaultShader", tooltip = "IGUI_options_ZBBetterFPS_optimizeDefaultShader_desc" },
-        optimize3DModels = { name = "IGUI_options_ZBBetterFPS_optimize3DModels", tooltip = "IGUI_options_ZBBetterFPS_optimize3DModels_desc" },
         optimizeIsoMovingObject = { name = "IGUI_options_ZBBetterFPS_optimizeIsoMovingObject", tooltip = "IGUI_options_ZBBetterFPS_optimizeIsoMovingObject_desc" },
         lowerCPUMode = {
             getText("IGUI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground"),
@@ -111,8 +107,6 @@ local function applyZBBetterFPSSettings(callee)
         ZBBetterFPS.setOptimizeIndieGL(opts.optimizeIndieGL == true)
         ZBBetterFPS.setOptimizeSpriteBatching(opts.optimizeSpriteBatching == true)
         ZBBetterFPS.setOptimizeRingBuffer(opts.optimizeRingBuffer == true)
-        ZBBetterFPS.setOptimizeDefaultShader(opts.optimizeDefaultShader == true)
-        ZBBetterFPS.setOptimize3DModels(opts.optimize3DModels == true)
         ZBBetterFPS.setOptimizeIsoMovingObject(opts.optimizeIsoMovingObject == true)
         ZBBetterFPS.setLowerCPUMode(opts.lowerCPUMode)
         if ZBBetterFPS.setEnableMetrics and data.enableMetrics then
