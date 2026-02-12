@@ -4,6 +4,14 @@ local MOD_ID   = "ZBBetterFPS"
 local MOD_NAME = "Zed's Better FPS"
 
 local isDebug = getCore():getDebug()
+local chunksPerWidth = 0
+
+if ZBBetterFPS and ZBBetterFPS.getChunksPerWidth then
+    chunksPerWidth = ZBBetterFPS.getChunksPerWidth()
+end
+if not chunksPerWidth or chunksPerWidth <= 0 then
+    chunksPerWidth = 10 -- B41
+end
 
 -- XXX numericValue has to be odd AND > 1, or tile rendering will break; 0 means "default"
 local function toOddValue(x)
@@ -12,12 +20,13 @@ local function toOddValue(x)
     return x * 2 + 1
 end
 
--- Build render distance combo list: index 1 = Default, 2-20 = 8, 16, ... 152 tiles
-local renderDistanceChoices = { getText("UI_options_ZBBetterFPS_uncappedFPS_default") }
+-- Build render distance combo list: index 1 = Default, 2-20 = 8, 16, ... 152 tiles (translated strings for Mod Options combo)
+local renderDistanceChoices = { getText("IGUI_options_ZBBetterFPS_uncappedFPS_default") }
 for i = 1, 19 do
-    renderDistanceChoices[i + 1] = tostring(toOddValue(i) * 8)
+    renderDistanceChoices[i + 1] = tostring(toOddValue(i) * chunksPerWidth)
 end
 
+-- Mod Options (B41) expects combo choices as numeric indices [1], [2], ... with getText() display strings, not translation keys
 local chunk = {
     mod_id = MOD_ID,
     mod_shortname = MOD_ID,
@@ -35,40 +44,35 @@ local chunk = {
         enableMetrics = false,
     },
     options_data = {
-        optimizeIndieGL = { name = "UI_options_ZBBetterFPS_optimizeIndieGL", tooltip = "UI_options_ZBBetterFPS_optimizeIndieGL_desc" },
-        optimizeSpriteBatching = { name = "UI_options_ZBBetterFPS_optimizeSpriteBatching", tooltip = "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
-        optimizeRingBuffer = { name = "UI_options_ZBBetterFPS_optimizeRingBuffer", tooltip = "UI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
-        optimizeDefaultShader = { name = "UI_options_ZBBetterFPS_optimizeDefaultShader", tooltip = "UI_options_ZBBetterFPS_optimizeDefaultShader_desc" },
-        optimize3DModels = { name = "UI_options_ZBBetterFPS_optimize3DModels", tooltip = "UI_options_ZBBetterFPS_optimize3DModels_desc" },
-        optimizeIsoMovingObject = { name = "UI_options_ZBBetterFPS_optimizeIsoMovingObject", tooltip = "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc" },
+        optimizeIndieGL = { name = "IGUI_options_ZBBetterFPS_optimizeIndieGL", tooltip = "IGUI_options_ZBBetterFPS_optimizeIndieGL_desc" },
+        optimizeSpriteBatching = { name = "IGUI_options_ZBBetterFPS_optimizeSpriteBatching", tooltip = "IGUI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
+        optimizeRingBuffer = { name = "IGUI_options_ZBBetterFPS_optimizeRingBuffer", tooltip = "IGUI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
+        optimizeDefaultShader = { name = "IGUI_options_ZBBetterFPS_optimizeDefaultShader", tooltip = "IGUI_options_ZBBetterFPS_optimizeDefaultShader_desc" },
+        optimize3DModels = { name = "IGUI_options_ZBBetterFPS_optimize3DModels", tooltip = "IGUI_options_ZBBetterFPS_optimize3DModels_desc" },
+        optimizeIsoMovingObject = { name = "IGUI_options_ZBBetterFPS_optimizeIsoMovingObject", tooltip = "IGUI_options_ZBBetterFPS_optimizeIsoMovingObject_desc" },
         lowerCPUMode = {
-            name = "UI_options_ZBBetterFPS_lowerCPUMode",
-            tooltip = "UI_options_ZBBetterFPS_lowerCPUMode_desc",
-            [1] = {
-                "UI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground",
-                "UI_options_ZBBetterFPS_lowerCPUMode_pausedAndBackground",
-                "UI_options_ZBBetterFPS_lowerCPUMode_always",
-                "UI_options_ZBBetterFPS_lowerCPUMode_never",
-            },
+            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground"),
+            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_pausedAndBackground"),
+            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_always"),
+            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_never"),
+            name = "IGUI_options_ZBBetterFPS_lowerCPUMode",
+            tooltip = "IGUI_options_ZBBetterFPS_lowerCPUMode_desc",
             default = 1,
         },
-        renderDistance = {
-            name = "UI_options_ZBBetterFPS_renderDistance",
-            tooltip = "UI_options_ZBBetterFPS_renderDistance_desc",
-            [1] = renderDistanceChoices,
-            default = 1,
-        },
+        renderDistance = (function()
+            local t = { name = "IGUI_options_ZBBetterFPS_renderDistance", tooltip = "IGUI_options_ZBBetterFPS_renderDistance_desc", default = 1 }
+            for i = 1, 20 do t[i] = renderDistanceChoices[i] end
+            return t
+        end)(),
         uncappedFPS = {
-            name = "UI_options_ZBBetterFPS_uncappedFPS",
-            tooltip = "UI_options_ZBBetterFPS_uncappedFPS_desc",
-            [1] = {
-                "UI_options_ZBBetterFPS_uncappedFPS_default",
-                "UI_options_ZBBetterFPS_uncappedFPS_enabled",
-                "UI_options_ZBBetterFPS_uncappedFPS_disabled",
-            },
+            getText("IGUI_options_ZBBetterFPS_uncappedFPS_default"),
+            getText("IGUI_options_ZBBetterFPS_uncappedFPS_enabled"),
+            getText("IGUI_options_ZBBetterFPS_uncappedFPS_disabled"),
+            name = "IGUI_options_ZBBetterFPS_uncappedFPS",
+            tooltip = "IGUI_options_ZBBetterFPS_uncappedFPS_desc",
             default = 1,
         },
-        enableMetrics = { name = "UI_options_ZBBetterFPS_enableMetrics", tooltip = "UI_options_ZBBetterFPS_enableMetrics_desc" },
+        enableMetrics = { name = "IGUI_options_ZBBetterFPS_enableMetrics", tooltip = "IGUI_options_ZBBetterFPS_enableMetrics_desc" },
     },
 }
 
@@ -80,8 +84,8 @@ end
 
 local options = ModOptions:getInstance(chunk)
 
-local function applyZBBetterFPSSettings()
-    print("[ZBBetterFPS] applying settings...")
+local function applyZBBetterFPSSettings(callee)
+    print("[ZBBetterFPS] applying settings... (" .. tostring(callee) .. ")")
     local opts = options.options
     local data = options.options_data
 
@@ -110,11 +114,12 @@ local function applyZBBetterFPSSettings()
         ZBBetterFPS.setOptimizeDefaultShader(opts.optimizeDefaultShader == true)
         ZBBetterFPS.setOptimize3DModels(opts.optimize3DModels == true)
         ZBBetterFPS.setOptimizeIsoMovingObject(opts.optimizeIsoMovingObject == true)
-        -- lowerCPUMode: index 2 = true (pausedAndBackground), else false
-        ZBBetterFPS.setLowerCPUMode(opts.lowerCPUMode == 2)
+        ZBBetterFPS.setLowerCPUMode(opts.lowerCPUMode)
         if ZBBetterFPS.setEnableMetrics and data.enableMetrics then
             ZBBetterFPS.setEnableMetrics(opts.enableMetrics == true)
         end
+    else
+        print("[ZBBetterFPS] Error! type(ZBBetterFPS) = " .. tostring(type(ZBBetterFPS)))
     end
 
     -- Render distance: combo index 1 = default (0), 2-20 = slider 1-19
@@ -128,13 +133,12 @@ local function applyZBBetterFPSSettings()
 end
 
 function options:OnApply()
-    applyZBBetterFPSSettings()
+    applyZBBetterFPSSettings("OnApply")
 end
 
-Events.OnMainMenuEnter.Add(function()
-    applyZBBetterFPSSettings()
-end)
-
-Events.OnGameStart.Add(function()
-    applyZBBetterFPSSettings()
+-- B41 ModOptions loads ini data only when game Options screen is opened, and in OnGameStart event
+-- but user may not open the Options screen, and OnGameStart is too late for us, so here we call loadIniData() explicitly
+Events.OnGameBoot.Add(function()
+    ModOptions.loadFile()
+    applyZBBetterFPSSettings("OnGameBoot")
 end)

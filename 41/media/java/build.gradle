@@ -13,6 +13,10 @@ dependencies {
     compileOnly files("${GAME_DIR_B41}/java/lwjgl-opengl.jar")
 }
 
+jar {
+    archiveBaseName.set("ZBBetterFPS")
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
