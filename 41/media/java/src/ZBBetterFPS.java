@@ -2,8 +2,6 @@ package me.zed_0xff.zb_better_fps;
 
 import me.zed_0xff.zombie_buddy.Exposer;
 
-import zombie.iso.IsoChunkMap;
-
 @Exposer.LuaClass
 public class ZBBetterFPS {
     public static int getChunksPerWidth() {
