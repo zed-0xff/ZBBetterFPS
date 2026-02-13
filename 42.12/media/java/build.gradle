@@ -3,32 +3,24 @@ plugins { id 'java' }
 // Detect OS and set game paths accordingly
 def osName = System.getProperty("os.name").toLowerCase()
 def HOME_DIR = System.getProperty("user.home")
-def GAME_DIR
-def GAME_JAR
 
-if (osName.contains("mac")) {
-    // macOS
-    GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app/Contents/Java"
-    GAME_JAR = "${GAME_DIR}/projectzomboid.jar"
-} else if (osName.contains("win")) {
-    // Windows - try common Steam installation paths
-    def programFiles = System.getenv("ProgramFiles(x86)") ?: System.getenv("ProgramFiles")
-    def steamPath = System.getenv("SteamPath") ?: "${programFiles}\\Steam"
-    GAME_DIR = "${steamPath}\\steamapps\\common\\ProjectZomboid"
-    GAME_JAR = "${GAME_DIR}\\projectzomboid.jar"
-} else {
-    // Linux
-    GAME_DIR = "${HOME_DIR}/.steam/steam/steamapps/common/ProjectZomboid"
-    GAME_JAR = "${GAME_DIR}/projectzomboid.jar"
-}
+def CUR_GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app/Contents/Java"
+def GAME_DIR_B42 = "${HOME_DIR}/projects/zomboid/versions/42.12"
 
 dependencies {
-    compileOnly files("${GAME_DIR}/ZombieBuddy.jar")
-    compileOnly files(GAME_JAR)
+    compileOnly files("${CUR_GAME_DIR}/ZombieBuddy.jar")
+    compileOnly files("${GAME_DIR_B42}/java")
+    compileOnly files("${GAME_DIR_B42}/java/lwjgl-opengl.jar")
 }
 
 jar {
     archiveBaseName.set("ZBBetterFPS")
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {

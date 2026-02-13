@@ -1,9 +1,11 @@
 .gradle
 *.class
 *.log
-*.tmp
 *.swp
+*.tmp
 
+# TODO: unignore .jar
 build
 reports
+test-results
 tmp

@@ -1,6 +1,13 @@
 # see https://github.com/zed-0xff/ZBetterWorkshopUpload
 
+*.class
+*.log
+*.swp
+*.tmp
 *.xcf
 
+.gradle
+reports
 spec
+test-results
 tmp
