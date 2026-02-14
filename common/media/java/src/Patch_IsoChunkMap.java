@@ -4,8 +4,11 @@ import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
+import se.krka.kahlua.vm.KahluaTable;
 import zombie.iso.IsoChunkMap;
+import zombie.Lua.LuaManager;
 
 @Patch(className = "zombie.iso.IsoChunkMap", methodName = "CalcChunkWidth")
 public class Patch_IsoChunkMap {
@@ -51,5 +54,32 @@ public class Patch_IsoChunkMap {
         }
 
         System.out.println("[ZBBetterFPS] Done: ChunkGridWidth = " + Accessor.tryGet(null, f_ChunkGridWidth, -1) + ", ChunkWidthInTiles = " + Accessor.tryGet(null, f_ChunkWidthInTiles, -1));
+        updateLuaCachedValues();
+    }
+
+    public static void updateLuaCachedValues() {
+        var env = LuaManager.env;
+        if (env == null) {
+            System.err.println("[ZBBetterFPS] updateLuaCachedValues: Failed to get Lua environment");
+            return;
+        }
+
+        var isoChunkMap = env.rawget("IsoChunkMap");
+        if (isoChunkMap instanceof KahluaTable tbl) {
+            syncField(tbl, f_ChunkGridWidth);
+            syncField(tbl, f_ChunkWidthInTiles);
+        } else {
+            System.err.println("[ZBBetterFPS] updateLuaCachedValues: Failed to get IsoChunkMap");
+        }
+    }
+
+    public static void syncField(KahluaTable tbl, Field field) {
+        // mimic LuaJavaClassExposer.java
+        if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
+            try {
+                tbl.rawset(field.getName(), field.get(null));
+            } catch (IllegalAccessException e) {
+            }
+        }
     }
 }
