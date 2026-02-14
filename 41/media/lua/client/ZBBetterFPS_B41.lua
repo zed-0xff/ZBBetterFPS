@@ -108,6 +108,9 @@ if not isDebug then
 end
 
 local options = ModOptions:getInstance(chunk)
+if ZBBetterFPS then
+    ZBBetterFPS.options = options
+end
 
 local function applyZBBetterFPSSettings(callee)
     print("[ZBBetterFPS] applying settings... (" .. tostring(callee) .. ")")

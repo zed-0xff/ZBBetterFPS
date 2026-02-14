@@ -17,6 +17,9 @@ local config = {
 }
 
 local options = PZAPI.ModOptions:create(MOD_ID, MOD_NAME)
+if ZBBetterFPS then
+    ZBBetterFPS.options = options
+end
 
 local function getDefaultRenderDistance()
     -- copied from java IsoChunkMap.CalcChunkWidth()
@@ -219,5 +222,7 @@ options.apply = function(self)
 end
 
 Events.OnGameBoot.Add(function()
+    -- vanilla options are not loaded yet, but we need them
+    PZAPI.ModOptions:load()
     options:apply()
 end)
