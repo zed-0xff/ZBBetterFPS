@@ -218,11 +218,6 @@ options.apply = function(self)
     end
 end
 
-Events.OnMainMenuEnter.Add(function()
-    options:apply()
-end)
-
--- mostly for patching options label text
-Events.OnGameStart.Add(function()
+Events.OnGameBoot.Add(function()
     options:apply()
 end)

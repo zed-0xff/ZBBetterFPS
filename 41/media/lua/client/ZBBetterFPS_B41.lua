@@ -50,7 +50,7 @@ local function clampRenderDistanceForBandits(numericValue)
 end
 
 -- Build render distance combo list: index 1 = Default, 2-20 = 8, 16, ... 152 tiles (translated strings for Mod Options combo)
-local renderDistanceChoices = { getText("IGUI_options_ZBBetterFPS_uncappedFPS_default") }
+local renderDistanceChoices = { getText("UI_options_ZBBetterFPS_uncappedFPS_default") }
 for i = 1, 19 do
     renderDistanceChoices[i + 1] = tostring(toOddValue(i) * chunksPerWidth)
 end
@@ -71,33 +71,33 @@ local chunk = {
         enableMetrics = false,
     },
     options_data = {
-        optimizeIndieGL = { name = "IGUI_options_ZBBetterFPS_optimizeIndieGL", tooltip = "IGUI_options_ZBBetterFPS_optimizeIndieGL_desc" },
-        optimizeSpriteBatching = { name = "IGUI_options_ZBBetterFPS_optimizeSpriteBatching", tooltip = "IGUI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
-        optimizeRingBuffer = { name = "IGUI_options_ZBBetterFPS_optimizeRingBuffer", tooltip = "IGUI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
-        optimizeIsoMovingObject = { name = "IGUI_options_ZBBetterFPS_optimizeIsoMovingObject", tooltip = "IGUI_options_ZBBetterFPS_optimizeIsoMovingObject_desc" },
+        optimizeIndieGL = { name = "UI_options_ZBBetterFPS_optimizeIndieGL", tooltip = "UI_options_ZBBetterFPS_optimizeIndieGL_desc" },
+        optimizeSpriteBatching = { name = "UI_options_ZBBetterFPS_optimizeSpriteBatching", tooltip = "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
+        optimizeRingBuffer = { name = "UI_options_ZBBetterFPS_optimizeRingBuffer", tooltip = "UI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
+        optimizeIsoMovingObject = { name = "UI_options_ZBBetterFPS_optimizeIsoMovingObject", tooltip = "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc" },
         lowerCPUMode = {
-            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground"),
-            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_pausedAndBackground"),
-            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_always"),
-            getText("IGUI_options_ZBBetterFPS_lowerCPUMode_never"),
-            name = "IGUI_options_ZBBetterFPS_lowerCPUMode",
-            tooltip = "IGUI_options_ZBBetterFPS_lowerCPUMode_desc",
+            getText("UI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground"),
+            getText("UI_options_ZBBetterFPS_lowerCPUMode_pausedAndBackground"),
+            getText("UI_options_ZBBetterFPS_lowerCPUMode_always"),
+            getText("UI_options_ZBBetterFPS_lowerCPUMode_never"),
+            name = "UI_options_ZBBetterFPS_lowerCPUMode",
+            tooltip = "UI_options_ZBBetterFPS_lowerCPUMode_desc",
             default = 1,
         },
         renderDistance = (function()
-            local t = { name = "IGUI_options_ZBBetterFPS_renderDistance", tooltip = "IGUI_options_ZBBetterFPS_renderDistance_desc", default = 1 }
+            local t = { name = "UI_options_ZBBetterFPS_renderDistance", tooltip = "UI_options_ZBBetterFPS_renderDistance_desc", default = 1 }
             for i = 1, 20 do t[i] = renderDistanceChoices[i] end
             return t
         end)(),
         uncappedFPS = {
-            getText("IGUI_options_ZBBetterFPS_uncappedFPS_default"),
-            getText("IGUI_options_ZBBetterFPS_uncappedFPS_enabled"),
-            getText("IGUI_options_ZBBetterFPS_uncappedFPS_disabled"),
-            name = "IGUI_options_ZBBetterFPS_uncappedFPS",
-            tooltip = "IGUI_options_ZBBetterFPS_uncappedFPS_desc",
+            getText("UI_options_ZBBetterFPS_uncappedFPS_default"),
+            getText("UI_options_ZBBetterFPS_uncappedFPS_enabled"),
+            getText("UI_options_ZBBetterFPS_uncappedFPS_disabled"),
+            name = "UI_options_ZBBetterFPS_uncappedFPS",
+            tooltip = "UI_options_ZBBetterFPS_uncappedFPS_desc",
             default = 1,
         },
-        enableMetrics = { name = "IGUI_options_ZBBetterFPS_enableMetrics", tooltip = "IGUI_options_ZBBetterFPS_enableMetrics_desc" },
+        enableMetrics = { name = "UI_options_ZBBetterFPS_enableMetrics", tooltip = "UI_options_ZBBetterFPS_enableMetrics_desc" },
     },
 }
 
