@@ -43,6 +43,35 @@ local function toOddValue(x)
     return x * 2 + 1
 end
 
+-- Bandits spawn at 55–65 tiles; need ChunkGridWidth*5 >= 65 => ChunkGridWidth >= 13
+local MIN_CHUNK_GRID_FOR_BANDITS = 13
+
+local function isBanditsModActive()
+    if getActivatedMods and type(getActivatedMods) == "function" then
+        local mods = getActivatedMods()
+        if mods then
+            if mods.size and type(mods.size) == "function" then
+                for i = 0, mods:size() - 1 do
+                    if mods:get(i) == "Bandits2" then return true end
+                end
+            elseif type(mods) == "table" then
+                for _, id in ipairs(mods) do
+                    if id == "Bandits2" then return true end
+                end
+            end
+        end
+    end
+    return (Bandit ~= nil) or (BanditServer ~= nil)
+end
+
+local function clampRenderDistanceForBandits(numericValue)
+    if numericValue == 0 then return numericValue end
+    if not isBanditsModActive() then return numericValue end
+    if numericValue >= MIN_CHUNK_GRID_FOR_BANDITS then return numericValue end
+    print("[ZBBetterFPS] Bandits mod detected: limiting minimum render distance to " .. tostring(MIN_CHUNK_GRID_FOR_BANDITS * 10) .. " tiles for compatibility.")
+    return MIN_CHUNK_GRID_FOR_BANDITS
+end
+
 local function updateSlider(slider, newValue)
     if not slider then return end
     if not slider.element then return end
@@ -173,6 +202,7 @@ options.apply = function(self)
     if not numericValue then return end
 
     numericValue = toOddValue(numericValue)
+    numericValue = clampRenderDistanceForBandits(numericValue)
 
     if numericValue then
         print("[ZBBetterFPS] calling ZBBetterFPS.setMaxRenderDistance( " .. tostring(numericValue) .. " )")

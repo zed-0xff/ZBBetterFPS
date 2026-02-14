@@ -20,6 +20,35 @@ local function toOddValue(x)
     return x * 2 + 1
 end
 
+-- Bandits spawn at 55–65 tiles; need ChunkGridWidth*5 >= 65 => ChunkGridWidth >= 13
+local MIN_CHUNK_GRID_FOR_BANDITS = 13
+
+local function isBanditsModActive()
+    if getActivatedMods and type(getActivatedMods) == "function" then
+        local mods = getActivatedMods()
+        if mods then
+            if mods.size and type(mods.size) == "function" then
+                for i = 0, mods:size() - 1 do
+                    if mods:get(i) == "Bandits2" then return true end
+                end
+            elseif type(mods) == "table" then
+                for _, id in ipairs(mods) do
+                    if id == "Bandits2" then return true end
+                end
+            end
+        end
+    end
+    return (Bandit ~= nil) or (BanditServer ~= nil)
+end
+
+local function clampRenderDistanceForBandits(numericValue)
+    if numericValue == 0 then return numericValue end
+    if not isBanditsModActive() then return numericValue end
+    if numericValue >= MIN_CHUNK_GRID_FOR_BANDITS then return numericValue end
+    print("[ZBBetterFPS] Bandits mod detected: limiting minimum render distance to " .. tostring(MIN_CHUNK_GRID_FOR_BANDITS * chunksPerWidth) .. " tiles for compatibility.")
+    return MIN_CHUNK_GRID_FOR_BANDITS
+end
+
 -- Build render distance combo list: index 1 = Default, 2-20 = 8, 16, ... 152 tiles (translated strings for Mod Options combo)
 local renderDistanceChoices = { getText("IGUI_options_ZBBetterFPS_uncappedFPS_default") }
 for i = 1, 19 do
@@ -120,6 +149,7 @@ local function applyZBBetterFPSSettings(callee)
     local rdIndex = opts.renderDistance or 1
     local numericValue = (rdIndex == 1) and 0 or (rdIndex - 1)
     numericValue = toOddValue(numericValue)
+    numericValue = clampRenderDistanceForBandits(numericValue)
     if numericValue and ZBBetterFPS and type(ZBBetterFPS.setMaxRenderDistance) == "function" then
         print("[ZBBetterFPS] ZBBetterFPS.setMaxRenderDistance(" .. tostring(numericValue) .. ")")
         ZBBetterFPS.setMaxRenderDistance(numericValue)

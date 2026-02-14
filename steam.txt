@@ -23,7 +23,13 @@ A comprehensive performance overhaul for Project Zomboid that optimizes renderin
 [/list]
 
 [b]⚠️ Important:[/b]
-[b]A savegame reload is required[/b] after changing the [b]Render Distance[/b] setting for changes to take effect. The [b]RingBuffer[/b] optimization requires a full game restart.
+[b]A savegame reload is required[/b] after changing the [b]Render Distance[/b] setting for changes to take effect. The [b]RingBuffer[/b] optimization requires a full game restart. [b]Safe to add or remove[/b] on existing saves.
+
+[b]✅ Compatibility:[/b]
+[list]
+[*] [b]Bandits[/b]: Compatible. When Bandits is enabled, minimum render distance is automatically limited to 130 tiles so bandit spawns work correctly.
+[*] [b]Tested on:[/b] B41, B42.12, B42.13.1, B42.13.2
+[/list]
 
 [b]📦 Installation:[/b]
 [list]
