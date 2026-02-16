@@ -1,12 +1,12 @@
 package me.zed_0xff.zb_better_fps;
 
+import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 import org.joml.Matrix4f;
 import zombie.core.Core;
 import zombie.core.opengl.ShaderProgram;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * This patch optimizes the constant matrix updates for 3D shaders.
@@ -32,22 +32,8 @@ public class Patch_VertexBufferObject {
     }
 
     public static final ShaderState[] shaderCache = new ShaderState[1024];
-    public static Field modelViewField;
-    public static Field projectionField;
-    public static Method setTransformMatrixMethod;
-
-    static {
-        try {
-            modelViewField = ShaderProgram.class.getDeclaredField("modelView");
-            modelViewField.setAccessible(true);
-            projectionField = ShaderProgram.class.getDeclaredField("projection");
-            projectionField.setAccessible(true);
-            setTransformMatrixMethod = ShaderProgram.class.getDeclaredMethod("setTransformMatrix", int.class, Matrix4f.class);
-            setTransformMatrixMethod.setAccessible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    public static final Field f_modelView = Accessor.findField(ShaderProgram.class, "modelView");
+    public static final Field f_projection = Accessor.findField(ShaderProgram.class, "projection");
 
     @Patch.OnEnter(skipOn = true)
     public static boolean setModelViewProjection(@Patch.Argument(0) Object shaderProgramObj) {
@@ -68,12 +54,13 @@ public class Patch_VertexBufferObject {
                 // Get uniform once and cache it
                 ShaderProgram.Uniform u = shaderProgram.getUniform("ModelViewProjection", 35676, false);
                 state.uLoc = (u == null) ? -1 : u.loc;
-                state.spMV = (Matrix4f) modelViewField.get(shaderProgram);
-                state.spPRJ = (Matrix4f) projectionField.get(shaderProgram);
+                state.spMV = Accessor.tryGet(shaderProgram, f_modelView, (Matrix4f) null);
+                state.spPRJ = Accessor.tryGet(shaderProgram, f_projection, (Matrix4f) null);
                 shaderCache[shaderId] = state;
             }
 
             if (state.uLoc == -1) return true;
+            if (state.spMV == null || state.spPRJ == null) return true;
 
             Matrix4f PRJ;
             Matrix4f MV;
@@ -98,7 +85,7 @@ public class Patch_VertexBufferObject {
             tmp.mul(MV);
 
             // Directly call the internal method using the linked loc
-            setTransformMatrixMethod.invoke(shaderProgram, state.uLoc, tmp);
+            Accessor.callExact(shaderProgram, "setTransformMatrix", new Class<?>[]{int.class, Matrix4f.class}, state.uLoc, tmp);
 
             return true;
         } catch (Exception e) {

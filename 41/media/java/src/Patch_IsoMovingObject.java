@@ -1,5 +1,6 @@
 package me.zed_0xff.zb_better_fps;
 
+import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 
 import zombie.characters.BodyDamage.BodyPart;
@@ -20,8 +21,6 @@ import zombie.network.ServerOptions;
 import zombie.util.Type;
 import zombie.vehicles.BaseVehicle;
 
-import java.lang.reflect.Field;
-
 /**
  * This patch provides an optimized implementation of IsoMovingObject.separate().
  * 
@@ -38,18 +37,11 @@ import java.lang.reflect.Field;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject {
-    public static Vector2 tempo;
+    public static final Vector2 tempo = initTempo();
 
-    static {
-        try {
-            // Access the private static tempo vector to avoid allocating a new one
-            Field field = IsoMovingObject.class.getDeclaredField("tempo");
-            field.setAccessible(true);
-            tempo = (Vector2) field.get(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            tempo = new Vector2();
-        }
+    public static Vector2 initTempo() {
+        Vector2 v = Accessor.tryGet(null, Accessor.findField(IsoMovingObject.class, "tempo"), (Vector2) null);
+        return v != null ? v : new Vector2();
     }
 
     @Patch.RuntimeType
