@@ -11,3 +11,4 @@ reports
 spec
 test-results
 tmp
+Rakefile
