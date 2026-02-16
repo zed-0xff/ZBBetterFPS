@@ -53,7 +53,7 @@ public class Patch_RingBuffer {
         f_indexBufferSize != null && f_vertices     != null && f_verticesBytes        != null &&
         f_indices         != null && f_indicesBytes != null && f_stateRun             != null &&
         f_vbo             != null && f_ibo          != null &&
-        VERTEX_SIZE       != -1;
+        VERTEX_SIZE > 0;
 
     @Patch.OnEnter(skipOn = true)
     public static boolean create(@Patch.This Object self) {
