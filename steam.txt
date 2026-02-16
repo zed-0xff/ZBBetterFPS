@@ -2,6 +2,8 @@
 
 A comprehensive performance overhaul for Project Zomboid that optimizes rendering, game logic, and CPU usage. Unlike traditional mods, ZBBetterFPS uses low-level runtime patching to fix performance bottlenecks deep within the game engine.
 
+[b]⚙️ All optimizations are disabled by default.[/b] Enable the ones you want in [b]Mod Options → ZBBetterFPS[/b] after loading the game.
+
 [b]🚀 Key Optimizations:[/b]
 [list]
 [*] [b]Smart Sprite Batching[/b]: Intelligently merges sprites and 3D models into fewer drawing commands, significantly reducing the load on your CPU.
@@ -23,12 +25,18 @@ A comprehensive performance overhaul for Project Zomboid that optimizes renderin
 [/list]
 
 [b]⚠️ Important:[/b]
-[b]A savegame reload is required[/b] after changing the [b]Render Distance[/b] setting for changes to take effect. The [b]RingBuffer[/b] optimization requires a full game restart. [b]Safe to add or remove[/b] on existing saves.
+All optimizations are [b]off by default[/b]—enable them in Mod Options. [b]A savegame reload is required[/b] after changing the [b]Render Distance[/b] setting for changes to take effect. The [b]RingBuffer[/b] optimization requires a full game restart. [b]Safe to add or remove[/b] on existing saves.
 
 [b]✅ Compatibility:[/b]
 [list]
 [*] [b]Bandits[/b]: Compatible. When Bandits is enabled, minimum render distance is automatically limited to 130 tiles so bandit spawns work correctly.
-[*] [b]Tested on:[/b] B41, B42.12, B42.13, B42.14
+[*] [b]Tested on:[/b]
+[list]
+[*] B41
+[*] B42.12
+[*] B42.13
+[*] 42.14 (unstable)
+[/list]
 [/list]
 
 [b]📦 Installation:[/b]
