@@ -1,6 +1,5 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 
 import zombie.AttackType;
@@ -18,7 +17,6 @@ import zombie.inventory.types.HandWeapon;
 import zombie.inventory.types.WeaponType;
 import zombie.iso.IsoGridSquare;
 import zombie.iso.IsoMovingObject;
-import zombie.iso.Vector2;
 import zombie.network.GameClient;
 import zombie.network.GameServer;
 import zombie.network.ServerOptions;
@@ -43,7 +41,7 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject {
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity, used in tests
 
     @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)

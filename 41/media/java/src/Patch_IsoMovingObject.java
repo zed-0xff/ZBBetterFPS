@@ -1,6 +1,5 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 
 import zombie.characters.BodyDamage.BodyPart;
@@ -23,10 +22,10 @@ import zombie.vehicles.BaseVehicle;
 
 /**
  * This patch provides an optimized implementation of IsoMovingObject.separate().
- * 
+ *
  * Separate is the core "pushing" and collision detection logic for every character in the game.
  * It runs for every zombie and player against every other nearby object, making it a major bottleneck.
- * 
+ *
  * Optimizations:
  * 1. Early Z-Axis Exit: Immediately skips collision checks if objects are on different heights.
  * 2. Squared Distance Math: Replaces expensive Math.sqrt() with dx*dx + dy*dy comparisons.
@@ -37,8 +36,7 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject {
-    public static final Vector2 tempo = new Vector2();
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity, used in tests
 
     @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)
@@ -46,7 +44,6 @@ public class Patch_IsoMovingObject {
         if (!ZBBetterFPS.g_OptimizeIsoMovingObject) {
             return false;
         }
-
         optimized_separate(selfObj);
         return true;
     }
@@ -54,161 +51,180 @@ public class Patch_IsoMovingObject {
     public static void optimized_separate(Object selfObj) {
         IsoMovingObject self = (IsoMovingObject) selfObj;
 
+        // Skip non-physical objects early
         if (!self.isSolidForSeparate() || !self.isPushableForSeparate()) {
             return;
         }
 
-        IsoGameCharacter isoGameCharacter = (IsoGameCharacter) Type.tryCastTo(self, IsoGameCharacter.class);
-        IsoPlayer isoPlayer = (IsoPlayer) Type.tryCastTo(self, IsoPlayer.class);
+        // Cache self attributes (B41: use .z, .nx, .ny fields)
+        float selfZ = self.z;
+        float selfNextX = self.nx;
+        float selfNextY = self.ny;
+        float selfWidth = self.getWidth();
+
+        IsoGameCharacter thisChr = (IsoGameCharacter) Type.tryCastTo(self, IsoGameCharacter.class);
+        IsoPlayer thisPlyr = (IsoPlayer) Type.tryCastTo(self, IsoPlayer.class);
         if (self.z < 0.0f) {
             self.z = 0.0f;
         }
 
-        // Cache per-self values (avoids repeated getters in hot loop)
-        final float selfWidth = self.getWidth();
-        final float selfZ = self.z;
-        final float selfNx = self.nx;
-        final float selfNy = self.ny;
-        final IsoGridSquare currentSquare = self.getCurrentSquare();
+        // Pre-calculate max weapon range once
+        float maxWeaponRange = (thisPlyr == null || !(thisPlyr.getPrimaryHandItem() instanceof HandWeapon)) ? 0.3f
+                : ((HandWeapon) thisPlyr.getPrimaryHandItem()).getMaxRange();
 
-        // Max range depends only on self; compute once
-        final float maxRange = (isoPlayer != null && (isoPlayer.getPrimaryHandItem() instanceof HandWeapon))
-                ? ((HandWeapon) isoPlayer.getPrimaryHandItem()).getMaxRange()
-                : 0.3f;
+        IsoGridSquare currentSquare = self.getCurrentSquare();
+        if (currentSquare == null) {
+            return;
+        }
 
+        long now = 0;
+
+        // Iterate through surrounding squares (B41: currentSquare.nav[i])
         for (int i = 0; i <= 8; i++) {
-            IsoGridSquare isoGridSquare = (i == 8) ? currentSquare : currentSquare.nav[i];
-            if (isoGridSquare == null || isoGridSquare.getMovingObjects().isEmpty()) {
+            IsoGridSquare sq = (i == 8) ? currentSquare : currentSquare.nav[i];
+
+            if (sq == null || sq.getMovingObjects().isEmpty()) {
                 continue;
             }
-            if (isoGridSquare != currentSquare && currentSquare.isBlockedTo(isoGridSquare)) {
+            if (sq != currentSquare && currentSquare.isBlockedTo(sq)) {
                 continue;
             }
 
-            java.util.ArrayList<IsoMovingObject> movingObjects = isoGridSquare.getMovingObjects();
-            final int size = movingObjects.size();
-            for (int i2 = 0; i2 < size; i2++) {
-                IsoMovingObject isoMovingObject = movingObjects.get(i2);
-                if (isoMovingObject == self || !isoMovingObject.isSolidForSeparate()) {
-                    continue;
-                }
-                if (Math.abs(selfZ - isoMovingObject.z) > 0.3f) {
+            java.util.ArrayList<IsoMovingObject> movingObjects = sq.getMovingObjects();
+            int size = movingObjects.size();
+            for (int n = 0; n < size; n++) {
+                IsoMovingObject obj = movingObjects.get(n);
+
+                if (obj == self) {
                     continue;
                 }
 
-                float f2 = selfWidth + isoMovingObject.getWidth();
-                float dx = selfNx - isoMovingObject.nx;
-                float dy = selfNy - isoMovingObject.ny;
-                float lengthSq = dx * dx + dy * dy;
-                float f2Sq = f2 * f2;
+                // Optimization 1: Fail fast on Z-axis difference
+                float dz = selfZ - obj.z;
+                if (dz < -0.3f || dz > 0.3f) {
+                    continue;
+                }
 
-                boolean otherIsCharacter = isoMovingObject instanceof IsoGameCharacter;
-                boolean otherIsVehicle = isoMovingObject instanceof BaseVehicle;
-                // Self not character, or other is neither character nor vehicle: simple contact then return
-                if (isoGameCharacter == null || (!otherIsCharacter && !otherIsVehicle)) {
-                    if (lengthSq < f2Sq) {
-                        CollisionManager.instance.AddContact(self, isoMovingObject);
+                if (!obj.isSolidForSeparate()) {
+                    continue;
+                }
+
+                float dx = selfNextX - obj.nx;
+                float dy = selfNextY - obj.ny;
+
+                // Optimization 2: Use squared distance to avoid Math.sqrt()
+                float distSq = dx * dx + dy * dy;
+                float twidth = selfWidth + obj.getWidth();
+                float twidthSq = twidth * twidth;
+
+                float range = twidth + maxWeaponRange;
+                float rangeSq = range * range;
+
+                if (distSq >= rangeSq) {
+                    continue;
+                }
+
+                // Optimization 5: Lazy casting only when objects are actually close
+                IsoGameCharacter objChr = (IsoGameCharacter) Type.tryCastTo(obj, IsoGameCharacter.class);
+                boolean otherIsVehicle = obj instanceof BaseVehicle;
+
+                if (thisChr == null || (objChr == null && !otherIsVehicle)) {
+                    if (distSq < twidthSq) {
+                        CollisionManager.instance.AddContact(self, obj);
                     }
                     return;
                 }
 
-                if (!otherIsCharacter) {
+                if (objChr == null) {
                     continue;
                 }
-                IsoGameCharacter isoGameCharacter2 = (IsoGameCharacter) isoMovingObject;
-                IsoPlayer isoPlayer2 = (isoMovingObject instanceof IsoPlayer) ? (IsoPlayer) isoMovingObject : null;
 
-                // Need real length only when in range for charge or collision
-                float rangeSq = (f2 + maxRange) * (f2 + maxRange);
-                if (lengthSq >= rangeSq) {
-                    continue;
-                }
-                Vector2 diff = tempo;
-                diff.x = dx;
-                diff.y = dy;
-                float length = (float) Math.sqrt(lengthSq);
+                IsoPlayer objPlyr = (obj instanceof IsoPlayer) ? (IsoPlayer) obj : null;
 
-                if (isoPlayer != null && isoPlayer.getBumpedChr() != isoMovingObject && length < f2 + maxRange
-                        && isoPlayer.getForwardDirection().angleBetween(diff) > 2.6179938155736564d
-                        && isoPlayer.getBeenSprintingFor() >= 70.0f && WeaponType.getWeaponType(isoPlayer) == WeaponType.spear) {
-                    isoPlayer.reportEvent("ChargeSpearConnect");
-                    isoPlayer.setAttackType("charge");
-                    isoPlayer.attackStarted = true;
-                    isoPlayer.setVariable("StartedAttackWhileSprinting", true);
-                    isoPlayer.setBeenSprintingFor(0.0f);
-                    return;
+                // Spear charge logic (same float-only approach as 42.x)
+                if (thisPlyr != null && thisPlyr.getBumpedChr() != obj) {
+                    Vector2 fwd = thisPlyr.getForwardDirection();
+                    float dot = (fwd.x * dx) + (fwd.y * dy);
+                    double cos = (double) dot / Math.sqrt(distSq);
+                    if (cos < -0.866025d) { // > 150 degrees
+                        if (thisPlyr.getBeenSprintingFor() >= 70.0f
+                                && WeaponType.getWeaponType(thisPlyr) == WeaponType.spear) {
+                            thisPlyr.reportEvent("ChargeSpearConnect");
+                            thisPlyr.setAttackType("charge");
+                            thisPlyr.attackStarted = true;
+                            thisPlyr.setVariable("StartedAttackWhileSprinting", true);
+                            thisPlyr.setBeenSprintingFor(0.0f);
+                            return;
+                        }
+                    }
                 }
-                if (length < f2) {
-                                boolean z = false;
-                                if (isoPlayer != null && isoPlayer.getVariableFloat("WalkSpeed", 0.0f) > 0.2f && isoPlayer.runningTime > 0.5f && isoPlayer.getBumpedChr() != isoMovingObject) {
-                                    z = true;
-                                }
-                                if (GameClient.bClient && isoPlayer != null && (isoGameCharacter2 instanceof IsoPlayer) && !ServerOptions.getInstance().PlayerBumpPlayer.getValue()) {
-                                    z = false;
-                                }
-                                if (z && !"charge".equals(isoPlayer.getAttackType())) {
-                                    boolean z2 = !self.isOnFloor() && (isoGameCharacter.getBumpedChr() != null || (System.currentTimeMillis() - isoPlayer.getLastBump()) / 100 < 15 || isoPlayer.isSprinting()) && (isoPlayer2 == null || !isoPlayer2.isNPC());
-                                    if (z2) {
-                                        isoGameCharacter.bumpNbr++;
-                                        int perkLevel = (10 - (isoGameCharacter.bumpNbr * 3)) + isoGameCharacter.getPerkLevel(PerkFactory.Perks.Fitness) + isoGameCharacter.getPerkLevel(PerkFactory.Perks.Strength);
-                                        if (isoGameCharacter.Traits.Clumsy.isSet()) {
-                                            perkLevel -= 5;
-                                        }
-                                        if (isoGameCharacter.Traits.Graceful.isSet()) {
-                                            perkLevel += 5;
-                                        }
-                                        if (isoGameCharacter.Traits.VeryUnderweight.isSet()) {
-                                            perkLevel -= 8;
-                                        }
-                                        if (isoGameCharacter.Traits.Underweight.isSet()) {
-                                            perkLevel -= 4;
-                                        }
-                                        if (isoGameCharacter.Traits.Obese.isSet()) {
-                                            perkLevel -= 8;
-                                        }
-                                        if (isoGameCharacter.Traits.Overweight.isSet()) {
-                                            perkLevel -= 4;
-                                        }
-                                        BodyPart bodyPart = isoGameCharacter.getBodyDamage().getBodyPart(BodyPartType.Torso_Lower);
-                                        if (bodyPart.getAdditionalPain(true) > 20.0f) {
-                                            perkLevel = (int) (perkLevel - ((bodyPart.getAdditionalPain(true) - 20.0f) / 20.0f));
-                                        }
-                                        if (Rand.Next(Math.max(1, Math.min(80, perkLevel))) == 0 || isoGameCharacter.isSprinting()) {
-                                            isoGameCharacter.setVariable("BumpDone", false);
-                                            isoGameCharacter.setBumpFall(true);
-                                            isoGameCharacter.setVariable("TripObstacleType", "zombie");
-                                        }
-                                    } else {
-                                        isoGameCharacter.bumpNbr = 0;
-                                    }
-                                    isoGameCharacter.setLastBump(System.currentTimeMillis());
-                                    isoGameCharacter.setBumpedChr(isoGameCharacter2);
-                                    isoGameCharacter.setBumpType(self.getBumpedType(isoGameCharacter2));
-                                    boolean zIsBehind = isoGameCharacter.isBehind(isoGameCharacter2);
-                                    String bumpType = isoGameCharacter.getBumpType();
-                                    if (zIsBehind) {
-                                        if (bumpType.equals("left")) {
-                                            bumpType = "right";
-                                        } else {
-                                            bumpType = "left";
-                                        }
-                                    }
-                                    isoGameCharacter2.setBumpType(bumpType);
-                                    isoGameCharacter2.setHitFromBehind(zIsBehind);
-                                    if (z2 | GameClient.bClient) {
-                                        isoGameCharacter.actionContext.reportEvent("wasBumped");
-                                    }
-                                }
-                                if (GameServer.bServer || self.distToNearestCamCharacter() < 60.0f) {
-                                    if (self.isPushedByForSeparate(isoMovingObject)) {
-                                        diff.setLength((length - f2) / 8.0f);
-                                        self.nx -= diff.x;
-                                        self.ny -= diff.y;
-                                    }
-                                    self.collideWith(isoMovingObject);
-                                }
+
+                // Physical collision/bumping logic
+                if (distSq < twidthSq) {
+                    boolean bump = false;
+                    if (thisPlyr != null && thisPlyr.getVariableFloat("WalkSpeed", 0.0f) > 0.2f
+                            && thisPlyr.runningTime > 0.5f && thisPlyr.getBumpedChr() != obj) {
+                        bump = true;
+                    }
+                    if (GameClient.bClient && thisPlyr != null && (objChr instanceof IsoPlayer)
+                            && !ServerOptions.getInstance().PlayerBumpPlayer.getValue()) {
+                        bump = false;
+                    }
+
+                    if (bump && !"charge".equals(thisPlyr.getAttackType())) {
+                        if (now == 0) now = System.currentTimeMillis();
+                        boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
+                                || (now - thisPlyr.getLastBump()) / 100 < 15
+                                || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
+                        if (wasBumped) {
+                            thisChr.bumpNbr++;
+                            int baseChance = (10 - (thisChr.bumpNbr * 3)) + thisChr.getPerkLevel(PerkFactory.Perks.Fitness) + thisChr.getPerkLevel(PerkFactory.Perks.Strength);
+                            if (thisChr.Traits.Clumsy.isSet()) baseChance -= 5;
+                            if (thisChr.Traits.Graceful.isSet()) baseChance += 5;
+                            if (thisChr.Traits.VeryUnderweight.isSet()) baseChance -= 8;
+                            if (thisChr.Traits.Underweight.isSet()) baseChance -= 4;
+                            if (thisChr.Traits.Obese.isSet()) baseChance -= 8;
+                            if (thisChr.Traits.Overweight.isSet()) baseChance -= 4;
+                            BodyPart part = thisChr.getBodyDamage().getBodyPart(BodyPartType.Torso_Lower);
+                            if (part.getAdditionalPain(true) > 20.0f) {
+                                baseChance = (int) (baseChance - ((part.getAdditionalPain(true) - 20.0f) / 20.0f));
+                            }
+                            if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0 || thisChr.isSprinting()) {
+                                thisChr.setVariable("BumpDone", false);
+                                thisChr.setBumpFall(true);
+                                thisChr.setVariable("TripObstacleType", "zombie");
+                            }
+                        } else {
+                            thisChr.bumpNbr = 0;
+                        }
+                        thisChr.setLastBump(now);
+                        thisChr.setBumpedChr(objChr);
+                        thisChr.setBumpType(self.getBumpedType(objChr));
+                        boolean fromBehind = thisChr.isBehind(objChr);
+                        String zombieBump = thisChr.getBumpType();
+                        if (fromBehind) {
+                            zombieBump = zombieBump.equals("left") ? "right" : "left";
+                        }
+                        objChr.setBumpType(zombieBump);
+                        objChr.setHitFromBehind(fromBehind);
+                        if (wasBumped | GameClient.bClient) {
+                            thisChr.actionContext.reportEvent("wasBumped");
+                        }
+                    }
+
+                    if (GameServer.bServer || self.distToNearestCamCharacter() < 60.0f) {
+                        if (self.isPushedByForSeparate(obj)) {
+                            float len = (float) Math.sqrt(distSq);
+                            if (len > 0) {
+                                float factor = (len - twidth) / (8.0f * len);
+                                self.nx -= dx * factor;
+                                self.ny -= dy * factor;
                             }
                         }
+                        self.collideWith(obj);
+                    }
+                }
             }
+        }
     }
 }
