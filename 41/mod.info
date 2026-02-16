@@ -8,6 +8,6 @@ versionMax=41.99
 incompatible=BetterFPS
 
 require=ZombieBuddy,modoptions
-javaJarFile=media/java/build/libs/ZBBetterFPS.jar
+javaJarFile=media/java/client/libs/ZBBetterFPS.jar
 javaPkgName=me.zed_0xff.zb_better_fps
 ZBVersionMin=1.6.0

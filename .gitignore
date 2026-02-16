@@ -4,7 +4,6 @@
 *.swp
 *.tmp
 
-# TODO: unignore .jar
 build
 reports
 test-results

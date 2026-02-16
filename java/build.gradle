@@ -1,0 +1,78 @@
+plugins { id 'java' }
+
+// Detect OS and set game paths accordingly
+def osName = System.getProperty("os.name").toLowerCase()
+def HOME_DIR = System.getProperty("user.home")
+
+def CUR_GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app/Contents/Java"
+
+// ZVersion: dotted game version (e.g. 41, 42.12, 42.13) — drives GAME_DIR, archiveBaseName, and source variant
+def ZVersion = findProperty('ZVersion')
+if (!ZVersion) throw new GradleException('ZVersion must be set (e.g. -PZVersion=42.13)')
+
+def pzParts = ZVersion.tokenize('.')
+def variant = (pzParts[0] == '41') ? 'B41' : "B${pzParts[0]}_${pzParts[1]}"
+def GAME_DIR = "${HOME_DIR}/projects/zomboid/versions/${ZVersion}"
+
+dependencies {
+    compileOnly files("${CUR_GAME_DIR}/ZombieBuddy.jar")
+    if (variant == 'B41' || variant == 'B42_12') {
+        compileOnly files("${GAME_DIR}/java")
+        compileOnly files("${GAME_DIR}/java/lwjgl-opengl.jar")
+    } else {
+        compileOnly files("${GAME_DIR}/java/ProjectZomboid.jar")
+    }
+}
+
+jar {
+    archiveBaseName.set("ZBBetterFPS-${ZVersion}")
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+// Conditional include by variant: B42_12 and B42_13 both include B42
+def versionSuffixes = ['B41', 'B42', 'B42_12', 'B42_13']
+def excludeSuffixes = versionSuffixes.findAll { suf ->
+    switch (variant) {
+        case 'B41':     return suf in ['B42', 'B42_12', 'B42_13']
+        case 'B42':     return suf in ['B41', 'B42_12', 'B42_13']
+        case 'B42_12':  return suf in ['B41', 'B42_13']
+        case 'B42_13':  return suf in ['B41', 'B42_12']
+        default:        return suf != variant
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            include '**/*.java'
+            excludeSuffixes.each { suf ->
+                exclude "**/*_${suf}.java"
+            }
+        }
+    }
+}
+
+// disable annotation processing, JNI headers, and incremental compilation
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorPath = files()
+    options.generatedSourceOutputDirectory.set(provider { null })
+    options.headerOutputDirectory.set(provider { null })
+    options.incremental = false
+}
+
+tasks.register("cleanup") {
+    doLast {
+        delete "${buildDir}/tmp"
+        delete "${buildDir}/classes"
+    }
+}
+
+tasks.named("build") {
+    finalizedBy("cleanup")
+}
+

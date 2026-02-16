@@ -1,5 +1,5 @@
 describe("ZBBetterFPS", function()
-    it("is defined", function()
+    it("is defined on client", function()
         assert(ZBBetterFPS)
     end)
 end)
