@@ -12,15 +12,15 @@ describe("Patch_IsoChunkMap", function()
 
     context("java side", function()
         it("has chunksPerWidth of " .. tostring(CPW), function()
-            assert.is_equal(CPW, ZBBetterFPS.getChunksPerWidth())
+            assert.eq(CPW, ZBBetterFPS.getChunksPerWidth())
         end)
 
         it("sets chunkGridWidth to " .. tostring(CGW), function()
-            assert.is_equal(CGW, IsoChunkMap.class:zbGet('ChunkGridWidth') or IsoChunkMap.class:zbGet('chunkGridWidth'))
+            assert.eq(CGW, IsoChunkMap.class:zbGet('ChunkGridWidth') or IsoChunkMap.class:zbGet('chunkGridWidth'))
         end)
 
         it("sets chunkWidthInTiles to " .. tostring(CPW*3), function()
-            assert.is_equal(CPW*3, getCell():getChunkMap(0):getWidthInTiles())
+            assert.eq(CPW*3, getCell():getChunkMap(0):getWidthInTiles())
         end)
     end)
 
@@ -30,8 +30,8 @@ describe("Patch_IsoChunkMap", function()
         for _, name in ipairs(names) do
             local field = obj[name]
             if field then
-                assert.is_equal("userdata", type(field))
-                assert.is_equal(expected_value, field:intValue())
+                assert.eq("userdata", type(field))
+                assert.eq(expected_value, field:intValue())
                 found = true
                 break
             end

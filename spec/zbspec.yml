@@ -12,3 +12,4 @@ game_versions:
   - 41
   - 42.12
   - 42.13.1
+  - unstable
