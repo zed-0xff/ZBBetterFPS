@@ -15,24 +15,37 @@ desc "build all"
 task :build => VERSIONS.map { |ver| "build:#{ver}" }
 
 namespace :java do
-  desc "symlink common files"
+  desc "symlink common files (identical in 2 or 3 versions)"
   task :symlink_common do
     require 'digest/md5'
 
-    v0 = VERSIONS.first
-    Dir["#{v0}/media/java/src/**/*.java"].each do |fname0|
-      next if File.symlink?(fname0)
+    # rel_fname => [versions that have it and it's not a symlink]
+    path_to_versions = Hash.new { |h, k| h[k] = [] }
+    VERSIONS.each do |ver|
+      Dir["#{ver}/media/java/src/**/*.java"].each do |fname|
+        next if File.symlink?(fname)
+        rel_fname = fname.sub("#{ver}/", '')
+        path_to_versions[rel_fname] << ver
+      end
+    end
 
-      rel_fname = fname0.sub("#{v0}/", '')
-      next unless VERSIONS.all? { |ver| File.exist?("#{ver}/#{rel_fname}") }
-      next unless VERSIONS.map  { |ver| Digest::MD5.file("#{ver}/#{rel_fname}").hexdigest }.uniq.size == 1
+    path_to_versions.each do |rel_fname, versions|
+      next if versions.size < 2
+      digests = versions.map { |ver| Digest::MD5.file("#{ver}/#{rel_fname}").hexdigest }
+      next unless digests.uniq.size == 1
 
-      FileUtils.cp(fname0, "common/media/java/src/")
+      common_dest = "common/#{rel_fname}"
+      FileUtils.mkdir_p(File.dirname(common_dest))
+      FileUtils.cp("#{versions.first}/#{rel_fname}", common_dest)
 
-      VERSIONS.each do |ver|
-        FileUtils.rm("#{ver}/#{rel_fname}")
-        Dir.chdir("#{ver}/media/java/src") do
-          sh "ln -s ../../../../common/#{rel_fname}"
+      versions.each do |ver|
+        link_path = "#{ver}/#{rel_fname}"
+        link_dir = File.dirname(link_path)
+        depth = link_dir.split("/").size
+        target = ([".."] * depth).join("/") + "/" + common_dest
+        FileUtils.rm(link_path)
+        Dir.chdir(link_dir) do
+          sh "ln -s #{target} #{File.basename(rel_fname)}"
         end
       end
     end
