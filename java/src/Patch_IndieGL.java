@@ -11,48 +11,34 @@ import me.zed_0xff.zombie_buddy.Patch;
  *   even the overhead of these checks and object manipulation adds up in hot loops.
  *
  * Optimizations:
- * 1. Low-Level Caching: Caches the last values for blend functions, alpha tests, 
- *    and depth masks directly in the `IndieGL` patch.
- *    - Impact: Skips the entire `GLState` machinery if the requested state is already active.
- *      This provides a significant performance boost in terrain rendering and sprite batching.
+ * 1. Alpha and depth caching: skip redundant glAlphaFunc, glDepthFunc, glDepthMask.
+ * 2. Blend is NOT cached (skipping causes overhead names and TV text to render as black rectangles).
  */
 public class Patch_IndieGL {
     public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
-    public static int lastBlendA, lastBlendB, lastBlendC, lastBlendD;
     public static int lastAlphaFunc;
     public static float lastAlphaRef = -1.0f;
     public static int lastDepthFunc = -1;
     public static int lastDepthMask = -1; // 0=false, 1=true
-    public static boolean blendFirst = true;
 
-    @Patch(className = "zombie.IndieGL", methodName = "glBlendFuncSeparate")
-    public static class glBlendFuncSeparate {
-        @Patch.OnEnter(skipOn = true)
-        public static boolean onEnter(int a, int b, int c, int d) {
-            if (!ZBBetterFPS.g_OptimizeIndieGL) return false;
-            if (!blendFirst && a == lastBlendA && b == lastBlendB && c == lastBlendC && d == lastBlendD) {
-                return true; // Skip redundant state change
-            }
-            lastBlendA = a; lastBlendB = b; lastBlendC = c; lastBlendD = d;
-            blendFirst = false;
-            return false; // Run original code
-        }
-    }
-
-    @Patch(className = "zombie.IndieGL", methodName = "glBlendFunc")
-    public static class glBlendFunc {
-        @Patch.OnEnter(skipOn = true)
-        public static boolean onEnter(int a, int b) {
-            if (!ZBBetterFPS.g_OptimizeIndieGL) return false;
-            if (!blendFirst && a == lastBlendA && b == lastBlendB && a == lastBlendC && b == lastBlendD) {
-                return true;
-            }
-            lastBlendA = a; lastBlendB = b; lastBlendC = a; lastBlendD = b;
-            blendFirst = false;
-            return false;
-        }
-    }
+    // Blend: never skip (text/UI breaks otherwise)
+    // Alpha and depth caching are kept for performance.
+    // @Patch(className = "zombie.IndieGL", methodName = "glBlendFuncSeparate")
+    // public static class glBlendFuncSeparate {
+    //     @Patch.OnEnter(skipOn = true)
+    //     public static boolean onEnter(int a, int b, int c, int d) {
+    //         return false; // never skip
+    //     }
+    // }
+    // 
+    // @Patch(className = "zombie.IndieGL", methodName = "glBlendFunc")
+    // public static class glBlendFunc {
+    //     @Patch.OnEnter(skipOn = true)
+    //     public static boolean onEnter(int a, int b) {
+    //         return false; // never skip
+    //     }
+    // }
 
     @Patch(className = "zombie.IndieGL", methodName = "glAlphaFunc")
     public static class glAlphaFunc {
