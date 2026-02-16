@@ -28,7 +28,7 @@ A comprehensive performance overhaul for Project Zomboid that optimizes renderin
 [b]✅ Compatibility:[/b]
 [list]
 [*] [b]Bandits[/b]: Compatible. When Bandits is enabled, minimum render distance is automatically limited to 130 tiles so bandit spawns work correctly.
-[*] [b]Tested on:[/b] B41, B42.12, B42.13.1, B42.13.2
+[*] [b]Tested on:[/b] B41, B42.12, B42.13, B42.14
 [/list]
 
 [b]📦 Installation:[/b]
