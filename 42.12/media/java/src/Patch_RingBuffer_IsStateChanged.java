@@ -1,5 +1,6 @@
 package me.zed_0xff.zb_better_fps;
 
+import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 import zombie.core.textures.Texture;
 import zombie.core.textures.TextureDraw;
@@ -23,34 +24,18 @@ import java.lang.reflect.Field;
 @Patch(className = "zombie.core.SpriteRenderer$RingBuffer", methodName = "isStateChanged")
 public class Patch_RingBuffer_IsStateChanged {
 
-    public static Field currentRunField;
-    public static Field currentUseAttribArrayField;
-    public static Field currentTexture0Field;
-    public static Field currentTexture1Field;
-    public static Field currentTexture2Field;
-    public static Field currentStyleField;
-    public static boolean reflectionInitialized = false;
+    public static final Class<?> RB_CLASS = Accessor.findClass("zombie.core.SpriteRenderer$RingBuffer");
 
-    static {
-        try {
-            Class<?> rbClass = Class.forName("zombie.core.SpriteRenderer$RingBuffer");
-            currentRunField = rbClass.getDeclaredField("currentRun");
-            currentRunField.setAccessible(true);
-            currentUseAttribArrayField = rbClass.getDeclaredField("currentUseAttribArray");
-            currentUseAttribArrayField.setAccessible(true);
-            currentTexture0Field = rbClass.getDeclaredField("currentTexture0");
-            currentTexture0Field.setAccessible(true);
-            currentTexture1Field = rbClass.getDeclaredField("currentTexture1");
-            currentTexture1Field.setAccessible(true);
-            currentTexture2Field = rbClass.getDeclaredField("currentTexture2");
-            currentTexture2Field.setAccessible(true);
-            currentStyleField = rbClass.getDeclaredField("currentStyle");
-            currentStyleField.setAccessible(true);
-            reflectionInitialized = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    public static final Field f_currentRun             = Accessor.findField(RB_CLASS, "currentRun");
+    public static final Field f_currentUseAttribArray  = Accessor.findField(RB_CLASS, "currentUseAttribArray");
+    public static final Field f_currentTexture0        = Accessor.findField(RB_CLASS, "currentTexture0");
+    public static final Field f_currentTexture1        = Accessor.findField(RB_CLASS, "currentTexture1");
+    public static final Field f_currentTexture2        = Accessor.findField(RB_CLASS, "currentTexture2");
+    public static final Field f_currentStyle           = Accessor.findField(RB_CLASS, "currentStyle");
+
+    public static final boolean ALL_FIELDS_FOUND = f_currentRun != null && f_currentUseAttribArray != null
+        && f_currentTexture0 != null && f_currentTexture1 != null
+        && f_currentTexture2 != null && f_currentStyle != null;
 
     @Patch.OnExit
     @Patch.RuntimeType
@@ -65,7 +50,7 @@ public class Patch_RingBuffer_IsStateChanged {
                              @Patch.Return(readOnly = false) boolean result) {
         
         // Only attempt to optimize if the original logic decided a state change is needed
-        if (!result || !ZBBetterFPS.g_OptimizeSpriteBatching || !reflectionInitialized) {
+        if (!result || !ZBBetterFPS.g_OptimizeSpriteBatching || !ALL_FIELDS_FOUND) {
             return;
         }
 
@@ -78,7 +63,7 @@ public class Patch_RingBuffer_IsStateChanged {
             Texture newTexture2 = (Texture) newTexture2Obj;
 
             // Cannot merge if there's no current batch to merge into
-            if (currentRunField.get(self) == null) return;
+            if (Accessor.tryGet(self, f_currentRun, null) == null) return;
 
             // 1. Check if merging this draw type is safe
             if (prevDraw != null) {
@@ -94,15 +79,16 @@ public class Patch_RingBuffer_IsStateChanged {
             }
 
             // 2. Check if technical state matches (vertex attributes)
-            if (newUseAttribArray != currentUseAttribArrayField.getByte(self)) return;
+            Byte useAttrib = Accessor.tryGet(self, f_currentUseAttribArray, (byte) 0);
+            if (useAttrib == null || newUseAttribArray != useAttrib.byteValue()) return;
 
             // 3. Compare Texture IDs (The core optimization: merge subtextures from same atlas)
-            if (getTexID(newTexture0) != getTexID((Texture) currentTexture0Field.get(self))) return;
-            if (getTexID(newTexture1) != getTexID((Texture) currentTexture1Field.get(self))) return;
-            if (getTexID(newTexture2) != getTexID((Texture) currentTexture2Field.get(self))) return;
+            if (getTexID(newTexture0) != getTexID(Accessor.tryGet(self, f_currentTexture0, (Texture) null))) return;
+            if (getTexID(newTexture1) != getTexID(Accessor.tryGet(self, f_currentTexture1, (Texture) null))) return;
+            if (getTexID(newTexture2) != getTexID(Accessor.tryGet(self, f_currentTexture2, (Texture) null))) return;
 
             // 4. Check Style compatibility
-            Style currentStyle = (Style) currentStyleField.get(self);
+            Style currentStyle = Accessor.tryGet(self, f_currentStyle, (Style) null);
             if (newStyle != currentStyle) {
                 if (currentStyle == null || newStyle.getStyleID() != currentStyle.getStyleID()) {
                     return; // Styles are fundamentally different
