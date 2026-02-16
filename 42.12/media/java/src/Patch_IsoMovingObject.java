@@ -26,14 +26,14 @@ import zombie.vehicles.BaseVehicle;
 
 /**
  * This patch provides an optimized implementation of IsoMovingObject.separate().
- * 
+ *
  * Separate is the core "pushing" and collision detection logic for every character in the game.
  * It runs for every zombie and player against every other nearby object, making it a major bottleneck.
- * 
+ *
  * Optimizations:
  * 1. Early Z-Axis Exit: Immediately skips collision checks if objects are on different heights.
  * 2. Squared Distance Math: Replaces expensive Math.sqrt() with dx*dx + dy*dy comparisons.
- * 3. Local Variable Caching: Caches self.getZ(), getNextX(), getWidth() etc. to avoid repeated method calls.
+ * 3. Local Variable Caching: Caches self position, getWidth() etc. to avoid repeated method calls.
  * 4. Identity Skip: Quickly skips self-comparison.
  * 5. Lazy Type Casting: Moves expensive Type.tryCastTo() checks inside the proximity check.
  * 6. Forward Direction Optimization: Uses direct X/Y components to avoid Vector2 object allocations.
@@ -48,7 +48,6 @@ public class Patch_IsoMovingObject {
         if (!ZBBetterFPS.g_OptimizeIsoMovingObject) {
             return false;
         }
-
         optimized_separate(selfObj);
         return true;
     }
@@ -76,32 +75,36 @@ public class Patch_IsoMovingObject {
                 : ((HandWeapon) thisPlyr.getPrimaryHandItem()).getMaxRange();
 
         IsoGridSquare currentSquare = self.getCurrentSquare();
-        if (currentSquare == null)
+        if (currentSquare == null) {
             return;
+        }
 
-        long now = 0; // Lazily initialized if needed for bumping logic
+        long now = 0;
 
         // Iterate through surrounding squares (including current)
         for (int i = 0; i <= 8; i++) {
-            IsoGridSquare sq = i == 8 ? currentSquare : currentSquare.getSurroundingSquares()[i];
-            
+            IsoGridSquare sq = (i == 8) ? currentSquare : currentSquare.getSurroundingSquares()[i];
+
             if (sq != null && !sq.getMovingObjects().isEmpty()
                     && (sq == currentSquare || !currentSquare.isBlockedTo(sq))) {
-                
+
                 int size = sq.getMovingObjects().size();
                 for (int n = 0; n < size; n++) {
                     IsoMovingObject obj = sq.getMovingObjects().get(n);
 
-                    if (obj == self)
+                    if (obj == self) {
                         continue;
+                    }
 
                     // Optimization 1: Fail fast on Z-axis difference
                     float dz = selfZ - obj.getZ();
-                    if (dz < -0.3f || dz > 0.3f)
+                    if (dz < -0.3f || dz > 0.3f) {
                         continue;
+                    }
 
-                    if (!obj.isSolidForSeparate())
+                    if (!obj.isSolidForSeparate()) {
                         continue;
+                    }
 
                     float dx = selfNextX - obj.getNextX();
                     float dy = selfNextY - obj.getNextY();
@@ -117,31 +120,29 @@ public class Patch_IsoMovingObject {
                     if (distSq < rangeSq) {
                         // Optimization 5: Lazy casting only when objects are actually close
                         IsoGameCharacter objChr = (IsoGameCharacter) Type.tryCastTo(obj, IsoGameCharacter.class);
+                        boolean otherIsVehicle = obj instanceof BaseVehicle;
 
-                        if (thisChr == null || (objChr == null && !(obj instanceof BaseVehicle))) {
+                        if (thisChr == null || (objChr == null && !otherIsVehicle)) {
                             if (distSq < twidthSq) {
                                 CollisionManager.instance.AddContact(self, obj);
-                                return;
                             }
-                            return; 
+                            return;
                         }
 
-                        if (objChr == null)
+                        if (objChr == null) {
                             continue;
+                        }
 
                         IsoPlayer objPlyr = (IsoPlayer) Type.tryCastTo(obj, IsoPlayer.class);
                         IsoZombie objZombie = (IsoZombie) Type.tryCastTo(obj, IsoZombie.class);
 
                         // Spear charge logic
                         if (thisPlyr != null && thisPlyr.getBumpedChr() != obj) {
-                            // Optimization 6: Avoid Vector2 allocation by using X/Y components
                             float fwdX = thisPlyr.getForwardDirectionX();
                             float fwdY = thisPlyr.getForwardDirectionY();
                             float dot = (fwdX * dx) + (fwdY * dy);
-                            
                             // cos(theta) = dot(A,B) / (|A|*|B|)
                             double cos = (double) dot / Math.sqrt(distSq);
-
                             if (cos < -0.866025d) { // > 150 degrees
                                 if (thisPlyr.getBeenSprintingFor() >= 70.0f
                                         && WeaponType.getWeaponType(thisPlyr) == WeaponType.spear) {
@@ -173,30 +174,28 @@ public class Patch_IsoMovingObject {
                                 bump = false;
                             }
 
-                            if (bump && !("charge".equals(thisPlyr.getAttackType()))) {
+                            if (bump && !"charge".equals(thisPlyr.getAttackType())) {
                                 if (now == 0) now = System.currentTimeMillis();
                                 boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
                                         || (now - thisPlyr.getLastBump()) / 100 < 15
                                         || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
                                 if (wasBumped) {
                                     thisChr.bumpNbr++;
-                                    int baseChance = (((10 - (thisChr.bumpNbr * 3))
-                                            + thisChr.getPerkLevel(PerkFactory.Perks.Fitness))
-                                            + thisChr.getPerkLevel(PerkFactory.Perks.Strength))
+                                    int baseChance = (10 - (thisChr.bumpNbr * 3))
+                                            + thisChr.getPerkLevel(PerkFactory.Perks.Fitness)
+                                            + thisChr.getPerkLevel(PerkFactory.Perks.Strength)
                                             - (thisChr.getMoodles().getMoodleLevel(MoodleType.Drunk) * 2);
-                                    if (thisChr.Traits.Clumsy.isSet())          baseChance -= 5;
-                                    if (thisChr.Traits.Graceful.isSet())        baseChance += 5;
+                                    if (thisChr.Traits.Clumsy.isSet()) baseChance -= 5;
+                                    if (thisChr.Traits.Graceful.isSet()) baseChance += 5;
                                     if (thisChr.Traits.VeryUnderweight.isSet()) baseChance -= 8;
-                                    if (thisChr.Traits.Underweight.isSet())     baseChance -= 4;
-                                    if (thisChr.Traits.Obese.isSet())           baseChance -= 8;
-                                    if (thisChr.Traits.Overweight.isSet())      baseChance -= 4;
-                                    
+                                    if (thisChr.Traits.Underweight.isSet()) baseChance -= 4;
+                                    if (thisChr.Traits.Obese.isSet()) baseChance -= 8;
+                                    if (thisChr.Traits.Overweight.isSet()) baseChance -= 4;
                                     BodyPart part = thisChr.getBodyDamage().getBodyPart(BodyPartType.Torso_Lower);
                                     if (part.getAdditionalPain(true) > 20.0f) {
                                         baseChance = (int) (baseChance - ((part.getAdditionalPain(true) - 20.0f) / 20.0f));
                                     }
-                                    if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0
-                                            || thisChr.isSprinting()) {
+                                    if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0 || thisChr.isSprinting()) {
                                         thisChr.setVariable("BumpDone", false);
                                         thisChr.setBumpFall(true);
                                         thisChr.setVariable("TripObstacleType", "zombie");

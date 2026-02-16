@@ -29,7 +29,7 @@ import zombie.vehicles.BaseVehicle;
  * Optimizations:
  * 1. Early Z-Axis Exit: Immediately skips collision checks if objects are on different heights.
  * 2. Squared Distance Math: Replaces expensive Math.sqrt() with dx*dx + dy*dy comparisons.
- * 3. Local Variable Caching: Caches self.getZ(), getNextX(), getWidth() etc. to avoid repeated method calls.
+ * 3. Local Variable Caching: Caches self position, getWidth() etc. to avoid repeated method calls.
  * 4. Identity Skip: Quickly skips self-comparison.
  * 5. Lazy Type Casting: Moves expensive Type.tryCastTo() checks inside the proximity check.
  * 6. Forward Direction Optimization: Uses direct X/Y components to avoid Vector2 object allocations.
@@ -56,7 +56,7 @@ public class Patch_IsoMovingObject {
             return;
         }
 
-        // Cache self attributes (B41: use .z, .nx, .ny fields)
+        // Cache self attributes
         float selfZ = self.z;
         float selfNextX = self.nx;
         float selfNextY = self.ny;
@@ -79,149 +79,146 @@ public class Patch_IsoMovingObject {
 
         long now = 0;
 
-        // Iterate through surrounding squares (B41: currentSquare.nav[i])
+        // Iterate through surrounding squares (including current)
         for (int i = 0; i <= 8; i++) {
             IsoGridSquare sq = (i == 8) ? currentSquare : currentSquare.nav[i];
 
-            if (sq == null || sq.getMovingObjects().isEmpty()) {
-                continue;
-            }
-            if (sq != currentSquare && currentSquare.isBlockedTo(sq)) {
-                continue;
-            }
+            if (sq != null && !sq.getMovingObjects().isEmpty()
+                    && (sq == currentSquare || !currentSquare.isBlockedTo(sq))) {
 
-            java.util.ArrayList<IsoMovingObject> movingObjects = sq.getMovingObjects();
-            int size = movingObjects.size();
-            for (int n = 0; n < size; n++) {
-                IsoMovingObject obj = movingObjects.get(n);
+                int size = sq.getMovingObjects().size();
+                for (int n = 0; n < size; n++) {
+                    IsoMovingObject obj = sq.getMovingObjects().get(n);
 
-                if (obj == self) {
-                    continue;
-                }
-
-                // Optimization 1: Fail fast on Z-axis difference
-                float dz = selfZ - obj.z;
-                if (dz < -0.3f || dz > 0.3f) {
-                    continue;
-                }
-
-                if (!obj.isSolidForSeparate()) {
-                    continue;
-                }
-
-                float dx = selfNextX - obj.nx;
-                float dy = selfNextY - obj.ny;
-
-                // Optimization 2: Use squared distance to avoid Math.sqrt()
-                float distSq = dx * dx + dy * dy;
-                float twidth = selfWidth + obj.getWidth();
-                float twidthSq = twidth * twidth;
-
-                float range = twidth + maxWeaponRange;
-                float rangeSq = range * range;
-
-                if (distSq >= rangeSq) {
-                    continue;
-                }
-
-                // Optimization 5: Lazy casting only when objects are actually close
-                IsoGameCharacter objChr = (IsoGameCharacter) Type.tryCastTo(obj, IsoGameCharacter.class);
-                boolean otherIsVehicle = obj instanceof BaseVehicle;
-
-                if (thisChr == null || (objChr == null && !otherIsVehicle)) {
-                    if (distSq < twidthSq) {
-                        CollisionManager.instance.AddContact(self, obj);
+                    if (obj == self) {
+                        continue;
                     }
-                    return;
-                }
 
-                if (objChr == null) {
-                    continue;
-                }
+                    // Optimization 1: Fail fast on Z-axis difference
+                    float dz = selfZ - obj.z;
+                    if (dz < -0.3f || dz > 0.3f) {
+                        continue;
+                    }
 
-                IsoPlayer objPlyr = (obj instanceof IsoPlayer) ? (IsoPlayer) obj : null;
+                    if (!obj.isSolidForSeparate()) {
+                        continue;
+                    }
 
-                // Spear charge logic (same float-only approach as 42.x)
-                if (thisPlyr != null && thisPlyr.getBumpedChr() != obj) {
-                    Vector2 fwd = thisPlyr.getForwardDirection();
-                    float dot = (fwd.x * dx) + (fwd.y * dy);
-                    double cos = (double) dot / Math.sqrt(distSq);
-                    if (cos < -0.866025d) { // > 150 degrees
-                        if (thisPlyr.getBeenSprintingFor() >= 70.0f
-                                && WeaponType.getWeaponType(thisPlyr) == WeaponType.spear) {
-                            thisPlyr.reportEvent("ChargeSpearConnect");
-                            thisPlyr.setAttackType("charge");
-                            thisPlyr.attackStarted = true;
-                            thisPlyr.setVariable("StartedAttackWhileSprinting", true);
-                            thisPlyr.setBeenSprintingFor(0.0f);
+                    float dx = selfNextX - obj.nx;
+                    float dy = selfNextY - obj.ny;
+
+                    // Optimization 2: Use squared distance to avoid Math.sqrt()
+                    float distSq = dx * dx + dy * dy;
+                    float twidth = selfWidth + obj.getWidth();
+                    float twidthSq = twidth * twidth;
+
+                    float range = twidth + maxWeaponRange;
+                    float rangeSq = range * range;
+
+                    if (distSq < rangeSq) {
+                        // Optimization 5: Lazy casting only when objects are actually close
+                        IsoGameCharacter objChr = (IsoGameCharacter) Type.tryCastTo(obj, IsoGameCharacter.class);
+                        boolean otherIsVehicle = obj instanceof BaseVehicle;
+
+                        if (thisChr == null || (objChr == null && !otherIsVehicle)) {
+                            if (distSq < twidthSq) {
+                                CollisionManager.instance.AddContact(self, obj);
+                            }
                             return;
                         }
-                    }
-                }
 
-                // Physical collision/bumping logic
-                if (distSq < twidthSq) {
-                    boolean bump = false;
-                    if (thisPlyr != null && thisPlyr.getVariableFloat("WalkSpeed", 0.0f) > 0.2f
-                            && thisPlyr.runningTime > 0.5f && thisPlyr.getBumpedChr() != obj) {
-                        bump = true;
-                    }
-                    if (GameClient.bClient && thisPlyr != null && (objChr instanceof IsoPlayer)
-                            && !ServerOptions.getInstance().PlayerBumpPlayer.getValue()) {
-                        bump = false;
-                    }
+                        if (objChr == null) {
+                            continue;
+                        }
 
-                    if (bump && !"charge".equals(thisPlyr.getAttackType())) {
-                        if (now == 0) now = System.currentTimeMillis();
-                        boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
-                                || (now - thisPlyr.getLastBump()) / 100 < 15
-                                || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
-                        if (wasBumped) {
-                            thisChr.bumpNbr++;
-                            int baseChance = (10 - (thisChr.bumpNbr * 3)) + thisChr.getPerkLevel(PerkFactory.Perks.Fitness) + thisChr.getPerkLevel(PerkFactory.Perks.Strength);
-                            if (thisChr.Traits.Clumsy.isSet()) baseChance -= 5;
-                            if (thisChr.Traits.Graceful.isSet()) baseChance += 5;
-                            if (thisChr.Traits.VeryUnderweight.isSet()) baseChance -= 8;
-                            if (thisChr.Traits.Underweight.isSet()) baseChance -= 4;
-                            if (thisChr.Traits.Obese.isSet()) baseChance -= 8;
-                            if (thisChr.Traits.Overweight.isSet()) baseChance -= 4;
-                            BodyPart part = thisChr.getBodyDamage().getBodyPart(BodyPartType.Torso_Lower);
-                            if (part.getAdditionalPain(true) > 20.0f) {
-                                baseChance = (int) (baseChance - ((part.getAdditionalPain(true) - 20.0f) / 20.0f));
-                            }
-                            if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0 || thisChr.isSprinting()) {
-                                thisChr.setVariable("BumpDone", false);
-                                thisChr.setBumpFall(true);
-                                thisChr.setVariable("TripObstacleType", "zombie");
-                            }
-                        } else {
-                            thisChr.bumpNbr = 0;
-                        }
-                        thisChr.setLastBump(now);
-                        thisChr.setBumpedChr(objChr);
-                        thisChr.setBumpType(self.getBumpedType(objChr));
-                        boolean fromBehind = thisChr.isBehind(objChr);
-                        String zombieBump = thisChr.getBumpType();
-                        if (fromBehind) {
-                            zombieBump = zombieBump.equals("left") ? "right" : "left";
-                        }
-                        objChr.setBumpType(zombieBump);
-                        objChr.setHitFromBehind(fromBehind);
-                        if (wasBumped | GameClient.bClient) {
-                            thisChr.actionContext.reportEvent("wasBumped");
-                        }
-                    }
+                        IsoPlayer objPlyr = (obj instanceof IsoPlayer) ? (IsoPlayer) obj : null;
 
-                    if (GameServer.bServer || self.distToNearestCamCharacter() < 60.0f) {
-                        if (self.isPushedByForSeparate(obj)) {
-                            float len = (float) Math.sqrt(distSq);
-                            if (len > 0) {
-                                float factor = (len - twidth) / (8.0f * len);
-                                self.nx -= dx * factor;
-                                self.ny -= dy * factor;
+                        // Spear charge logic
+                        if (thisPlyr != null && thisPlyr.getBumpedChr() != obj) {
+                            Vector2 fwd = thisPlyr.getForwardDirection();
+                            float dot = (fwd.x * dx) + (fwd.y * dy);
+                            // cos(theta) = dot(A,B) / (|A|*|B|)
+                            double cos = (double) dot / Math.sqrt(distSq);
+                            if (cos < -0.866025d) { // > 150 degrees
+                                if (thisPlyr.getBeenSprintingFor() >= 70.0f
+                                        && WeaponType.getWeaponType(thisPlyr) == WeaponType.spear) {
+                                    thisPlyr.reportEvent("ChargeSpearConnect");
+                                    thisPlyr.setAttackType("charge");
+                                    thisPlyr.attackStarted = true;
+                                    thisPlyr.setVariable("StartedAttackWhileSprinting", true);
+                                    thisPlyr.setBeenSprintingFor(0.0f);
+                                    return;
+                                }
                             }
                         }
-                        self.collideWith(obj);
+
+                        // Physical collision/bumping logic
+                        if (distSq < twidthSq) {
+                            boolean bump = false;
+                            if (thisPlyr != null && thisPlyr.getVariableFloat("WalkSpeed", 0.0f) > 0.2f
+                                    && thisPlyr.runningTime > 0.5f && thisPlyr.getBumpedChr() != obj) {
+                                bump = true;
+                            }
+                            if (GameClient.bClient && thisPlyr != null && (objChr instanceof IsoPlayer)
+                                    && !ServerOptions.getInstance().PlayerBumpPlayer.getValue()) {
+                                bump = false;
+                            }
+
+                            if (bump && !"charge".equals(thisPlyr.getAttackType())) {
+                                if (now == 0) now = System.currentTimeMillis();
+                                boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
+                                        || (now - thisPlyr.getLastBump()) / 100 < 15
+                                        || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
+                                if (wasBumped) {
+                                    thisChr.bumpNbr++;
+                                    int baseChance = (10 - (thisChr.bumpNbr * 3))
+                                            + thisChr.getPerkLevel(PerkFactory.Perks.Fitness)
+                                            + thisChr.getPerkLevel(PerkFactory.Perks.Strength);
+                                    if (thisChr.Traits.Clumsy.isSet()) baseChance -= 5;
+                                    if (thisChr.Traits.Graceful.isSet()) baseChance += 5;
+                                    if (thisChr.Traits.VeryUnderweight.isSet()) baseChance -= 8;
+                                    if (thisChr.Traits.Underweight.isSet()) baseChance -= 4;
+                                    if (thisChr.Traits.Obese.isSet()) baseChance -= 8;
+                                    if (thisChr.Traits.Overweight.isSet()) baseChance -= 4;
+                                    BodyPart part = thisChr.getBodyDamage().getBodyPart(BodyPartType.Torso_Lower);
+                                    if (part.getAdditionalPain(true) > 20.0f) {
+                                        baseChance = (int) (baseChance - ((part.getAdditionalPain(true) - 20.0f) / 20.0f));
+                                    }
+                                    if (Rand.Next(Math.max(1, Math.min(80, baseChance))) == 0 || thisChr.isSprinting()) {
+                                        thisChr.setVariable("BumpDone", false);
+                                        thisChr.setBumpFall(true);
+                                        thisChr.setVariable("TripObstacleType", "zombie");
+                                    }
+                                } else {
+                                    thisChr.bumpNbr = 0;
+                                }
+                                thisChr.setLastBump(now);
+                                thisChr.setBumpedChr(objChr);
+                                thisChr.setBumpType(self.getBumpedType(objChr));
+                                boolean fromBehind = thisChr.isBehind(objChr);
+                                String zombieBump = thisChr.getBumpType();
+                                if (fromBehind) {
+                                    zombieBump = zombieBump.equals("left") ? "right" : "left";
+                                }
+                                objChr.setBumpType(zombieBump);
+                                objChr.setHitFromBehind(fromBehind);
+                                if (wasBumped | GameClient.bClient) {
+                                    thisChr.actionContext.reportEvent("wasBumped");
+                                }
+                            }
+
+                            if (GameServer.bServer || self.distToNearestCamCharacter() < 60.0f) {
+                                if (self.isPushedByForSeparate(obj)) {
+                                    float len = (float) Math.sqrt(distSq);
+                                    if (len > 0) {
+                                        float factor = (len - twidth) / (8.0f * len);
+                                        self.nx -= dx * factor;
+                                        self.ny -= dy * factor;
+                                    }
+                                }
+                                self.collideWith(obj);
+                            }
+                        }
                     }
                 }
             }
