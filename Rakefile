@@ -15,7 +15,7 @@ desc "build all"
 task :build => VERSIONS.map { |ver| "build:#{ver}" }
 
 namespace :java do
-  desc "symlink common files (identical in 2 or 3 versions)"
+  desc "symlink common files when 2+ versions are identical (others stay as regular files)"
   task :symlink_common do
     require 'digest/md5'
 
@@ -31,14 +31,19 @@ namespace :java do
 
     path_to_versions.each do |rel_fname, versions|
       next if versions.size < 2
-      digests = versions.map { |ver| Digest::MD5.file("#{ver}/#{rel_fname}").hexdigest }
-      next unless digests.uniq.size == 1
+      digest_to_versions = Hash.new { |h, k| h[k] = [] }
+      versions.each do |ver|
+        dig = Digest::MD5.file("#{ver}/#{rel_fname}").hexdigest
+        digest_to_versions[dig] << ver
+      end
+      group = digest_to_versions.values.select { |v| v.size >= 2 }.max_by(&:size)
+      next unless group
 
       common_dest = "common/#{rel_fname}"
       FileUtils.mkdir_p(File.dirname(common_dest))
-      FileUtils.cp("#{versions.first}/#{rel_fname}", common_dest)
+      FileUtils.cp("#{group.first}/#{rel_fname}", common_dest)
 
-      versions.each do |ver|
+      group.each do |ver|
         link_path = "#{ver}/#{rel_fname}"
         link_dir = File.dirname(link_path)
         depth = link_dir.split("/").size
