@@ -6,6 +6,7 @@ import zombie.GameTime;
 import zombie.core.PerformanceSettings;
 
 public class Patch_MainLoop {
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
     // Frame timing for "always" mode
     public static long renderFrameStart = 0;

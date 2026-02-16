@@ -43,12 +43,7 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject {
-    public static final Vector2 tempo = initTempo();
-
-    public static Vector2 initTempo() {
-        Vector2 v = Accessor.tryGet(null, Accessor.findField(IsoMovingObject.class, "tempo"), (Vector2) null);
-        return v != null ? v : new Vector2();
-    }
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
     @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)

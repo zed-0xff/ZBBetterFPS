@@ -32,12 +32,15 @@ public class Patch_VertexBufferObject {
     }
 
     public static final ShaderState[] shaderCache = new ShaderState[1024];
-    public static final Field f_modelView = Accessor.findField(ShaderProgram.class, "modelView");
-    public static final Field f_projection = Accessor.findField(ShaderProgram.class, "projection");
+
+    public static final Field f_modelView  = Accessor.findField(ShaderProgram.class, "modelView",  "ModelView");
+    public static final Field f_projection = Accessor.findField(ShaderProgram.class, "projection", "Projection");
+
+    public static final boolean ALL_FIELDS_FOUND = f_modelView != null && f_projection != null;
 
     @Patch.OnEnter(skipOn = true)
     public static boolean setModelViewProjection(@Patch.Argument(0) Object shaderProgramObj) {
-        if (!ZBBetterFPS.g_Optimize3DModels) return false;
+        if (!ZBBetterFPS.g_Optimize3DModels || !ALL_FIELDS_FOUND) return false;
 
         try {
             ShaderProgram shaderProgram = (ShaderProgram) shaderProgramObj;

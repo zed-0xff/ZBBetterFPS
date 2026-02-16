@@ -17,6 +17,7 @@ import me.zed_0xff.zombie_buddy.Patch;
  *      This provides a significant performance boost in terrain rendering and sprite batching.
  */
 public class Patch_IndieGL {
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
     public static int lastBlendA, lastBlendB, lastBlendC, lastBlendD;
     public static int lastAlphaFunc;

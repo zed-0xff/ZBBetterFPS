@@ -1,6 +1,8 @@
 ---
 # ZBSpec configuration (created by zbspec --init)
 
+unpause: false
+
 # Your mod(s) to test (ZombieBuddy and ZBSpec are auto-included).
 # Note: mod 'id' is case-sensitive (must match the id= in the mod's mod.info).
 mods:

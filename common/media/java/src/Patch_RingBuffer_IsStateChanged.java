@@ -26,8 +26,8 @@ public class Patch_RingBuffer_IsStateChanged {
 
     public static final Class<?> RB_CLASS = Accessor.findClass("zombie.core.SpriteRenderer$RingBuffer");
 
-    public static final Field f_currentRun             = Accessor.findField(RB_CLASS, "currentRun");
-    public static final Field f_currentUseAttribArray  = Accessor.findField(RB_CLASS, "currentUseAttribArray");
+    public static final Field f_currentRun              = Accessor.findField(RB_CLASS, "currentRun");
+    public static final Field f_currentUseAttribArray    = Accessor.findField(RB_CLASS, "currentUseAttribArray");
     public static final Field f_currentTexture0        = Accessor.findField(RB_CLASS, "currentTexture0");
     public static final Field f_currentTexture1        = Accessor.findField(RB_CLASS, "currentTexture1");
     public static final Field f_currentTexture2        = Accessor.findField(RB_CLASS, "currentTexture2");

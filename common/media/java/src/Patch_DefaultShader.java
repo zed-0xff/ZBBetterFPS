@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL20;
  */
 @Patch(className = "zombie.core.DefaultShader", methodName = "setChunkDepth")
 public class Patch_DefaultShader {
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
     public static int chunkDepthLoc = -2; // -2 indicates not yet initialized, -1 indicates not found
     public static float cachedChunkDepth = Float.NaN; // Stores the last depth value sent to GPU

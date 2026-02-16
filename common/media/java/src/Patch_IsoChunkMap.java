@@ -16,6 +16,8 @@ public class Patch_IsoChunkMap {
     public static final Field f_ChunkWidthInTiles = Accessor.findField(IsoChunkMap.class, "ChunkWidthInTiles", "chunkWidthInTiles");
     public static final Field f_ChunkGridWidth    = Accessor.findField(IsoChunkMap.class, "ChunkGridWidth",    "chunkGridWidth");
 
+    public static final boolean ALL_FIELDS_FOUND = f_ChunksPerWidth != null && f_ChunkWidthInTiles != null && f_ChunkGridWidth != null;
+
     public static int getChunksPerWidth() {
         return Accessor.tryGet(null, f_ChunksPerWidth, -1);
     }
@@ -27,6 +29,11 @@ public class Patch_IsoChunkMap {
 
         if (ZBBetterFPS.g_MaxRenderDistance == 0) {
             System.out.println("[ZBBetterFPS] using default render distance " + chunkGridWidth);
+            return;
+        }
+
+        if (!ALL_FIELDS_FOUND) {
+            System.err.println("[ZBBetterFPS] Failed to find all fields, skipping render distance patch");
             return;
         }
 

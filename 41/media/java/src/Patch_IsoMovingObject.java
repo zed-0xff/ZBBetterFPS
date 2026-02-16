@@ -37,12 +37,8 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject {
-    public static final Vector2 tempo = initTempo();
-
-    public static Vector2 initTempo() {
-        Vector2 v = Accessor.tryGet(null, Accessor.findField(IsoMovingObject.class, "tempo"), (Vector2) null);
-        return v != null ? v : new Vector2();
-    }
+    public static final Vector2 tempo = new Vector2();
+    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
     @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)
@@ -127,13 +123,13 @@ public class Patch_IsoMovingObject {
                 if (lengthSq >= rangeSq) {
                     continue;
                 }
-                Vector2 vector2 = tempo;
-                vector2.x = dx;
-                vector2.y = dy;
+                Vector2 diff = tempo;
+                diff.x = dx;
+                diff.y = dy;
                 float length = (float) Math.sqrt(lengthSq);
 
                 if (isoPlayer != null && isoPlayer.getBumpedChr() != isoMovingObject && length < f2 + maxRange
-                        && isoPlayer.getForwardDirection().angleBetween(vector2) > 2.6179938155736564d
+                        && isoPlayer.getForwardDirection().angleBetween(diff) > 2.6179938155736564d
                         && isoPlayer.getBeenSprintingFor() >= 70.0f && WeaponType.getWeaponType(isoPlayer) == WeaponType.spear) {
                     isoPlayer.reportEvent("ChargeSpearConnect");
                     isoPlayer.setAttackType("charge");
@@ -205,9 +201,9 @@ public class Patch_IsoMovingObject {
                                 }
                                 if (GameServer.bServer || self.distToNearestCamCharacter() < 60.0f) {
                                     if (self.isPushedByForSeparate(isoMovingObject)) {
-                                        vector2.setLength((length - f2) / 8.0f);
-                                        self.nx -= vector2.x;
-                                        self.ny -= vector2.y;
+                                        diff.setLength((length - f2) / 8.0f);
+                                        self.nx -= diff.x;
+                                        self.ny -= diff.y;
                                     }
                                     self.collideWith(isoMovingObject);
                                 }
