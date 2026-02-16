@@ -28,10 +28,39 @@ local function versionFromSuffix(className)
     return a and tonumber(a) or nil, a and nil or nil
 end
 
+-- Declared minors per major (from class suffixes like _B42_12, _B42_13)
+local declaredMinors = {}
+for _, className in ipairs(classes) do
+    local wantMajor, wantMinor = versionFromSuffix(className)
+    if wantMajor and wantMinor then
+        declaredMinors[wantMajor] = declaredMinors[wantMajor] or {}
+        declaredMinors[wantMajor][wantMinor] = true
+    end
+end
+
+-- Effective minor for current game: latest declared minor <= game minor, or latest declared if game is newer
+local function effectiveMinorForMajor(wantMajor)
+    local minors = declaredMinors[wantMajor]
+    if not minors then return nil end
+    local list = {}
+    for m, _ in pairs(minors) do list[#list + 1] = m end
+    if #list == 0 then return nil end
+    table.sort(list)
+    local maxDeclared = list[#list]
+    if minor >= maxDeclared then return maxDeclared end
+    local best = nil
+    for _, m in ipairs(list) do
+        if m <= minor and (not best or m > best) then best = m end
+    end
+    return best
+end
+
 local function shouldExist(className)
     local wantMajor, wantMinor = versionFromSuffix(className)
     if not wantMajor then return true end
-    return major == wantMajor and (not wantMinor or minor == wantMinor)
+    if major ~= wantMajor then return false end
+    if not wantMinor then return true end -- e.g. _B42 with no minor = any 42.x
+    return wantMinor == effectiveMinorForMajor(wantMajor)
 end
 
 for _, className in ipairs(classes) do
