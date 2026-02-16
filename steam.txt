@@ -34,7 +34,8 @@ All optimizations are [b]off by default[/b]—enable them in Mod Options. [b]A s
 [list]
 [*] B41
 [*] B42.12
-[*] B42.13
+[*] B42.13.1
+[*] B42.13.2
 [*] 42.14 (unstable)
 [/list]
 [/list]
