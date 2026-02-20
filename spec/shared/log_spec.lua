@@ -1,4 +1,4 @@
-describe("console.log", function()
+describe("console.txt", function()
   local exceptions = {
     "NoSuchFieldException",
     "NullPointerException",
