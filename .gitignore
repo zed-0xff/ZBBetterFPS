@@ -5,6 +5,4 @@
 *.tmp
 
 build
-reports
-test-results
 tmp
