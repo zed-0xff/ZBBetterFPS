@@ -12,7 +12,7 @@ describe("console.txt", function()
 
   for _, exception in ipairs(exceptions) do
     it("should not have any " .. exception, function()
-      assert.same({}, zbGrepLog(exception))
+      assert.same({}, zbgreplog(exception))
     end)
   end
 end)

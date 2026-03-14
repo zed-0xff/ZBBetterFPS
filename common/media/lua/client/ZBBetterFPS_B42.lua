@@ -49,17 +49,21 @@ end
 -- Bandits spawn at 55–65 tiles; need ChunkGridWidth*5 >= 65 => ChunkGridWidth >= 13
 local MIN_CHUNK_GRID_FOR_BANDITS = 13
 
+local function isBandits(id)
+    return id == "Bandits2" or id == "\\Bandits2"
+end
+
 local function isBanditsModActive()
     if getActivatedMods and type(getActivatedMods) == "function" then
         local mods = getActivatedMods()
         if mods then
             if mods.size and type(mods.size) == "function" then
                 for i = 0, mods:size() - 1 do
-                    if mods:get(i) == "Bandits2" then return true end
+                    if isBandits(mods:get(i)) then return true end
                 end
             elseif type(mods) == "table" then
                 for _, id in ipairs(mods) do
-                    if id == "Bandits2" then return true end
+                    if isBandits(id) then return true end
                 end
             end
         end
