@@ -16,7 +16,7 @@ describe("Patch_IsoChunkMap", function()
         end)
 
         it("sets chunkGridWidth to " .. tostring(CGW), function()
-            assert.eq(CGW, IsoChunkMap.class:zbGet('ChunkGridWidth') or IsoChunkMap.class:zbGet('chunkGridWidth'))
+            assert.eq(CGW, IsoChunkMap.class:zbget('ChunkGridWidth') or IsoChunkMap.class:zbget('chunkGridWidth'))
         end)
 
         it("sets chunkWidthInTiles to " .. tostring(CPW*3), function()

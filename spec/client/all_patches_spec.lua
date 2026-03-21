@@ -71,7 +71,7 @@ for _, className in ipairs(classes) do
                 assert(Accessor.findClass(fullName), "class not found: " .. fullName)
             end)
             it("should find all fields", function()
-                assert(Accessor.findClass(fullName):zbGet("ALL_FIELDS_FOUND"),
+                assert(Accessor.findClass(fullName):zbget("ALL_FIELDS_FOUND"),
                     "ALL_FIELDS_FOUND not true for " .. fullName)
             end)
         else

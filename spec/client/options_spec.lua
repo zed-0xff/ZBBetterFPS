@@ -23,14 +23,14 @@ describe("ZBBetterFPS java object", function()
         g_OptimizeDefaultShader   = not is_B41,
         g_Optimize3DModels        = not is_B41,
         g_OptimizeIsoMovingObject = true,
-        g_LowerCPUMode            = ZBBetterFPS.class:zbGet('CPU_MODE_ALWAYS'),
+        g_LowerCPUMode            = ZBBetterFPS.class:zbget('CPU_MODE_ALWAYS'),
         g_EnableMetrics           = false,
     }
 
     -- cannot use just ZBBetterFPS[key] because it is actually a Lua mirror-object, and it lies
     for key, value in pairs(expected_params) do
         it("has " .. key .. " set to " .. tostring(value), function()
-            assert.eq(value, ZBBetterFPS.class:zbGet(key))
+            assert.eq(value, ZBBetterFPS.class:zbget(key))
         end)
     end
 end)
