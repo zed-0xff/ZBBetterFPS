@@ -65,16 +65,19 @@ local chunk = {
         optimizeSpriteBatching = false,
         optimizeRingBuffer = false,
         optimizeIsoMovingObject = false,
+        instantZoom = false,
+
         lowerCPUMode = 1,       -- 1-based index: 1=pausedOrBackground, 2=pausedAndBackground, 3=always, 4=never
         renderDistance = 1,     -- 1-based index: 1=default, 2-20=slider 1-19
         uncappedFPS = 1,        -- 1=Default, 2=Uncapped, 3=Capped
         enableMetrics = false,
     },
     options_data = {
-        optimizeIndieGL = { name = "UI_options_ZBBetterFPS_optimizeIndieGL", tooltip = "UI_options_ZBBetterFPS_optimizeIndieGL_desc" },
-        optimizeSpriteBatching = { name = "UI_options_ZBBetterFPS_optimizeSpriteBatching", tooltip = "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
-        optimizeRingBuffer = { name = "UI_options_ZBBetterFPS_optimizeRingBuffer", tooltip = "UI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
+        optimizeIndieGL         = { name = "UI_options_ZBBetterFPS_optimizeIndieGL",         tooltip = "UI_options_ZBBetterFPS_optimizeIndieGL_desc" },
+        optimizeSpriteBatching  = { name = "UI_options_ZBBetterFPS_optimizeSpriteBatching",  tooltip = "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc" },
+        optimizeRingBuffer      = { name = "UI_options_ZBBetterFPS_optimizeRingBuffer",      tooltip = "UI_options_ZBBetterFPS_optimizeRingBuffer_desc" },
         optimizeIsoMovingObject = { name = "UI_options_ZBBetterFPS_optimizeIsoMovingObject", tooltip = "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc" },
+        instantZoom             = { name = "UI_options_ZBBetterFPS_instantZoom",             tooltip = "UI_options_ZBBetterFPS_instantZoom_desc" },
         lowerCPUMode = {
             getText("UI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground"),
             getText("UI_options_ZBBetterFPS_lowerCPUMode_pausedAndBackground"),
@@ -140,6 +143,8 @@ local function applyZBBetterFPSSettings(callee)
         ZBBetterFPS.setOptimizeSpriteBatching(opts.optimizeSpriteBatching == true)
         ZBBetterFPS.setOptimizeRingBuffer(opts.optimizeRingBuffer == true)
         ZBBetterFPS.setOptimizeIsoMovingObject(opts.optimizeIsoMovingObject == true)
+        ZBBetterFPS.setInstantZoom(opts.instantZoom == true)
+
         ZBBetterFPS.setLowerCPUMode(opts.lowerCPUMode)
         if ZBBetterFPS.setEnableMetrics and data.enableMetrics then
             ZBBetterFPS.setEnableMetrics(opts.enableMetrics == true)

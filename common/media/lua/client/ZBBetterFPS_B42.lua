@@ -12,8 +12,9 @@ local config = {
     optimizeDefaultShader = nil,
     optimize3DModels = nil,
     optimizeIsoMovingObject = nil,
+    instantZoom = nil,
+
     lowerCPUMode = nil,
-    enableMetrics = nil,
 }
 
 local options = PZAPI.ModOptions:create(MOD_ID, MOD_NAME)
@@ -103,12 +104,13 @@ local function updateSlider(slider, newValue)
     label:setName_ZBBetterFPS(text)
 end
 
-config.optimizeIndieGL = options:addTickBox("optimizeIndieGL", "UI_options_ZBBetterFPS_optimizeIndieGL", false, "UI_options_ZBBetterFPS_optimizeIndieGL_desc")
-config.optimizeSpriteBatching = options:addTickBox("optimizeSpriteBatching", "UI_options_ZBBetterFPS_optimizeSpriteBatching", false, "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc")
-config.optimizeRingBuffer = options:addTickBox("optimizeRingBuffer", "UI_options_ZBBetterFPS_optimizeRingBuffer", false, "UI_options_ZBBetterFPS_optimizeRingBuffer_desc")
-config.optimizeDefaultShader = options:addTickBox("optimizeDefaultShader", "UI_options_ZBBetterFPS_optimizeDefaultShader", false, "UI_options_ZBBetterFPS_optimizeDefaultShader_desc")
-config.optimize3DModels = options:addTickBox("optimize3DModels", "UI_options_ZBBetterFPS_optimize3DModels", false, "UI_options_ZBBetterFPS_optimize3DModels_desc")
+config.optimizeIndieGL         = options:addTickBox("optimizeIndieGL", "UI_options_ZBBetterFPS_optimizeIndieGL", false, "UI_options_ZBBetterFPS_optimizeIndieGL_desc")
+config.optimizeSpriteBatching  = options:addTickBox("optimizeSpriteBatching", "UI_options_ZBBetterFPS_optimizeSpriteBatching", false, "UI_options_ZBBetterFPS_optimizeSpriteBatching_desc")
+config.optimizeRingBuffer      = options:addTickBox("optimizeRingBuffer", "UI_options_ZBBetterFPS_optimizeRingBuffer", false, "UI_options_ZBBetterFPS_optimizeRingBuffer_desc")
+config.optimizeDefaultShader   = options:addTickBox("optimizeDefaultShader", "UI_options_ZBBetterFPS_optimizeDefaultShader", false, "UI_options_ZBBetterFPS_optimizeDefaultShader_desc")
+config.optimize3DModels        = options:addTickBox("optimize3DModels", "UI_options_ZBBetterFPS_optimize3DModels", false, "UI_options_ZBBetterFPS_optimize3DModels_desc")
 config.optimizeIsoMovingObject = options:addTickBox("optimizeIsoMovingObject", "UI_options_ZBBetterFPS_optimizeIsoMovingObject", false, "UI_options_ZBBetterFPS_optimizeIsoMovingObject_desc")
+config.instantZoom             = options:addTickBox("instantZoom", "UI_options_ZBBetterFPS_instantZoom", false, "UI_options_ZBBetterFPS_instantZoom_desc")
 
 config.lowerCPUMode = options:addComboBox("lowerCPUMode", "UI_options_ZBBetterFPS_lowerCPUMode", "UI_options_ZBBetterFPS_lowerCPUMode_desc")
 config.lowerCPUMode:addItem("UI_options_ZBBetterFPS_lowerCPUMode_pausedOrBackground", false)
@@ -195,6 +197,8 @@ options.apply = function(self)
             ZBBetterFPS.setOptimizeDefaultShader(config.optimizeDefaultShader:getValue())
             ZBBetterFPS.setOptimize3DModels(config.optimize3DModels:getValue())
             ZBBetterFPS.setOptimizeIsoMovingObject(config.optimizeIsoMovingObject:getValue())
+            ZBBetterFPS.setInstantZoom(config.instantZoom:getValue())
+
             ZBBetterFPS.setLowerCPUMode(config.lowerCPUMode:getValue())
 
             if ZBBetterFPS.setEnableMetrics and config.enableMetrics then

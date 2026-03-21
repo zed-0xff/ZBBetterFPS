@@ -13,6 +13,7 @@ local classes = {
     "Patch_IsoMovingObject_B42_13",
     "Patch_MainLoop_B41",
     "Patch_MainLoop_B42",
+    "Patch_MultiTextureFBO2",
     "Patch_RingBuffer_IsStateChanged_B41",
     "Patch_RingBuffer_IsStateChanged_B42",
     "Patch_RingBuffer",

@@ -22,6 +22,8 @@ public class ZBBetterFPS {
     public static boolean g_OptimizeDefaultShader   = false;
     public static boolean g_Optimize3DModels        = false;
     public static boolean g_OptimizeIsoMovingObject = false;
+    public static boolean g_InstantZoom             = false;
+
     public static int     g_LowerCPUMode            = CPU_MODE_PAUSED_AND_BG;
 
     public static boolean g_EnableMetrics = false;
@@ -33,6 +35,7 @@ public class ZBBetterFPS {
     public static void setOptimizeDefaultShader(boolean b)   { g_OptimizeDefaultShader = b; }
     public static void setOptimize3DModels(boolean b)        { g_Optimize3DModels = b; }
     public static void setOptimizeIsoMovingObject(boolean b) { g_OptimizeIsoMovingObject = b; }
+    public static void setInstantZoom(boolean b)             { g_InstantZoom = b; }
     public static void setLowerCPUMode(int mode)             { g_LowerCPUMode = mode; }
     public static void setEnableMetrics(boolean b)           { g_EnableMetrics = b; }
 }
