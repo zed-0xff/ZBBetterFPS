@@ -30,14 +30,7 @@ All optimizations are [b]off by default[/b]—enable them in Mod Options. [b]A s
 [b]✅ Compatibility:[/b]
 [list]
 [*] [b]Bandits[/b]: Compatible. When Bandits is enabled, minimum render distance is automatically limited to 130 tiles so bandit spawns work correctly.
-[*] [b]Tested on:[/b]
-    [list]
-    [*] 41
-    [*] 42.12
-    [*] 42.13
-    [*] 42.14
-    [*] 42.15
-    [/list]
+[*] [b]Game versions:[/b]: B41, B42.12 to B42.17 (inclusive)
 [/list]
 
 [b]📦 Installation:[/b]
