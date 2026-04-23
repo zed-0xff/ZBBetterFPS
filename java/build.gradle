@@ -3,8 +3,7 @@ plugins {
     id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.1'
 }
 
-def HOME_DIR = System.getProperty("user.home")
-
+def HOME_DIR     = System.getProperty("user.home")
 def CUR_GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app/Contents/Java"
 
 // ZVersion: dotted game version (e.g. 41, 42.12, 42.13) — drives GAME_DIR, archiveBaseName, and source variant
@@ -25,8 +24,9 @@ dependencies {
     }
 }
 
+def MOD_ID = project.projectDir.parentFile.name
 jar {
-    archiveBaseName.set("ZBBetterFPS-${ZVersion}")
+    archiveBaseName.set("${MOD_ID}-${ZVersion}")
 }
 
 // Conditional include by variant: B42_12 and B42_13 both include B42
@@ -71,4 +71,3 @@ tasks.register("cleanup") {
 tasks.named("build") {
     finalizedBy("cleanup")
 }
-
