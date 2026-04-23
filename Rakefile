@@ -18,6 +18,7 @@ VERSIONS.each do |ver, jdk_ver|
     dst_dir = "#{ver}/media/java/client/libs"
     FileUtils.mkdir_p dst_dir
     FileUtils.mv "java/build/libs/ZBBetterFPS-#{ver}.jar", "#{dst_dir}/ZBBetterFPS.jar"
+    FileUtils.mv "java/build/libs/ZBBetterFPS-#{ver}.jar.zbs", "#{dst_dir}/ZBBetterFPS.jar.zbs"
   end
 end
 
