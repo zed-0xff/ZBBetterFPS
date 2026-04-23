@@ -1,7 +1,8 @@
-plugins { id 'java' }
+plugins {
+    id 'java'
+    id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.1'
+}
 
-// Detect OS and set game paths accordingly
-def osName = System.getProperty("os.name").toLowerCase()
 def HOME_DIR = System.getProperty("user.home")
 
 def CUR_GAME_DIR = "${HOME_DIR}/Library/Application Support/Steam/steamapps/common/ProjectZomboid/Project Zomboid.app/Contents/Java"
@@ -26,11 +27,6 @@ dependencies {
 
 jar {
     archiveBaseName.set("ZBBetterFPS-${ZVersion}")
-}
-
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
 }
 
 // Conditional include by variant: B42_12 and B42_13 both include B42
