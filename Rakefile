@@ -1,5 +1,7 @@
 task :default => :build
 
+MOD_ID   = "ZBBetterFPS"
+MOD_TYPE = "client"
 VERSIONS = {
   "41"    => "17",
   "42.12" => "17",
@@ -15,10 +17,10 @@ VERSIONS.each do |ver, jdk_ver|
       }
       sh env, "gradle build -PZVersion=#{ver}"
     end
-    dst_dir = "#{ver}/media/java/client/libs"
+    dst_dir = "#{ver}/media/java/#{MOD_TYPE}"
     FileUtils.mkdir_p dst_dir
-    FileUtils.mv "java/build/libs/ZBBetterFPS-#{ver}.jar", "#{dst_dir}/ZBBetterFPS.jar"
-    FileUtils.mv "java/build/libs/ZBBetterFPS-#{ver}.jar.zbs", "#{dst_dir}/ZBBetterFPS.jar.zbs"
+    FileUtils.mv "java/build/libs/#{MOD_ID}-#{ver}.jar", "#{dst_dir}/#{MOD_ID}.jar"
+    FileUtils.mv "java/build/libs/#{MOD_ID}-#{ver}.jar.zbs", "#{dst_dir}/#{MOD_ID}.jar.zbs"
   end
 end
 
