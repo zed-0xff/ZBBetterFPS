@@ -1,6 +1,10 @@
 package me.zed_0xff.zb_better_fps;
 
+import me.zed_0xff.zombie_buddy.Accessor;
+import me.zed_0xff.zombie_buddy.Logger;
 import me.zed_0xff.zombie_buddy.Patch;
+
+import java.lang.reflect.Method;
 
 import zombie.AttackType;
 import zombie.characters.BodyDamage.BodyPart;
@@ -41,16 +45,34 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject_B42_13 {
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity, used in tests
+    public static final Method M_isNPC = firstExistingMethod(IsoGameCharacter.class, "isNPC", "isNpc");
+    public static final boolean ALL_FIELDS_FOUND = M_isNPC != null;
+
+    public static Method firstExistingMethod(Class<?> cls, String... names) {
+        for (String n : names) {
+            Method m = Accessor.findNoArgMethod(cls, n);
+            if (m != null) return m;
+        }
+        return null;
+    }
 
     @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)
     public static boolean separate(@Patch.This Object selfObj) {
-        if (!ZBBetterFPS.g_OptimizeIsoMovingObject) {
+        if (!ZBBetterFPS.g_OptimizeIsoMovingObject || M_isNPC == null) {
             return false;
         }
         optimized_separate(selfObj);
         return true;
+    }
+
+    public static boolean isNPC(IsoGameCharacter plyr) {
+        try {
+            return (boolean) M_isNPC.invoke(plyr);
+        } catch (Throwable t) {
+            Logger.error("Failed to invoke isNPC method: " + t);
+            return false;
+        }
     }
 
     public static void optimized_separate(Object selfObj) {
@@ -179,7 +201,7 @@ public class Patch_IsoMovingObject_B42_13 {
                                 if (now == 0) now = System.currentTimeMillis();
                                 boolean wasBumped = !self.isOnFloor() && (thisChr.getBumpedChr() != null
                                         || (now - thisPlyr.getLastBump()) / 100 < 15
-                                        || thisPlyr.isSprinting()) && (objPlyr == null || !objPlyr.isNPC());
+                                        || thisPlyr.isSprinting()) && (objPlyr == null || !isNPC(objPlyr));
                                 if (wasBumped) {
                                     thisChr.bumpNbr++;
                                     int baseChance = (10 - (thisChr.bumpNbr * 3))

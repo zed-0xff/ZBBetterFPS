@@ -11,8 +11,10 @@ mods:
   - { id: "modoptions", steam_id: 2169435993 } # only for B41
 
 game_versions:
-  - 41
+  - 41.78
   - 42.12
   - 42.13
   - 42.14
+  - 42.15
+  - 42.16
   - unstable

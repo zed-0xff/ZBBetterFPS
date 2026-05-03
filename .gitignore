@@ -1,4 +1,7 @@
 .gradle
+.project
+.settings
+
 *.class
 *.log
 *.swp
