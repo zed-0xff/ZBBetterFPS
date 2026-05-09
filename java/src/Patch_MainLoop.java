@@ -5,7 +5,7 @@ import org.lwjglx.opengl.Display;
 import zombie.GameTime;
 import zombie.core.PerformanceSettings;
 
-public class Patch_MainLoop_B41 {
+public class Patch_MainLoop {
     public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
 
     // Frame timing for "always" mode
@@ -53,8 +53,7 @@ public class Patch_MainLoop_B41 {
         return Math.max(1, sleepMs);
     }
 
-    /** 41.78: per-frame method is frameStep(), not mainThreadStep(). */
-    @Patch(className = "zombie.GameWindow", methodName = "frameStep")
+    @Patch(className = "zombie.GameWindow", methodName = "frameStep") // was: mainThreadStep
     public static class GameWindowPatch {
         @Patch.OnEnter
         public static void onEnter() {
@@ -108,5 +107,20 @@ public class Patch_MainLoop_B41 {
         }
     }
 
-    /* 41.78: LightingThread has no runInner() - the loop is in a lambda in create(). Skip this patch. */
+    @Patch(className = "zombie.iso.LightingThread", methodName = "runInner")
+    public static class LightingThreadPatch {
+        @Patch.OnExit
+        public static void onExit() {
+            if (!shouldThrottle()) return;
+
+            // Only throttle if the game world is loaded
+            if (!Utils.isGameStarted()) return;
+
+            try {
+                Thread.sleep(isFullyInactive() ? 100 : 1);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }
+    }
 }
