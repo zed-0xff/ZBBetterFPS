@@ -29,12 +29,12 @@ public class Patch_RingBuffer_IsStateChanged_B42 {
 
     @Patch.OnExit
     public static void onExit(
-            @Field byte currentUseAttribArray,
-            @Field Object currentRun,
-            @Field Style currentStyle,
-            @Field Texture currentTexture0,
-            @Field Texture currentTexture1,
-            @Field Texture currentTexture2,
+            @Field final byte currentUseAttribArray,
+            @Field final Object currentRun,
+            @Field final Style currentStyle,
+            @Field final Texture currentTexture0,
+            @Field final Texture currentTexture1,
+            @Field final Texture currentTexture2,
 
             @Patch.This Object self, 
             TextureDraw draw,
