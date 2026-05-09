@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.1'
+    id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.2'
 }
 
 def HOME_DIR     = System.getProperty("user.home")
@@ -55,7 +55,6 @@ sourceSets {
 
 // disable annotation processing, JNI headers, and incremental compilation
 tasks.withType(JavaCompile).configureEach {
-    options.annotationProcessorPath = files()
     options.generatedSourceOutputDirectory.set(provider { null })
     options.headerOutputDirectory.set(provider { null })
     options.incremental = false

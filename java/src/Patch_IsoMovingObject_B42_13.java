@@ -1,10 +1,6 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
-import me.zed_0xff.zombie_buddy.Logger;
 import me.zed_0xff.zombie_buddy.Patch;
-
-import java.lang.reflect.Method;
 
 import zombie.AttackType;
 import zombie.characters.BodyDamage.BodyPart;
@@ -45,39 +41,24 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject_B42_13 {
-    public static final Method M_isNPC = firstExistingMethod(IsoGameCharacter.class, "isNPC", "isNpc");
-    public static final boolean ALL_FIELDS_FOUND = M_isNPC != null;
-
-    public static Method firstExistingMethod(Class<?> cls, String... names) {
-        for (String n : names) {
-            Method m = Accessor.findNoArgMethod(cls, n);
-            if (m != null) return m;
-        }
-        return null;
-    }
+    public static final boolean ALL_FIELDS_FOUND = true;
 
     @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)
-    public static boolean separate(@Patch.This Object selfObj) {
-        if (!ZBBetterFPS.g_OptimizeIsoMovingObject || M_isNPC == null) {
+    public static boolean separate(@Patch.This IsoMovingObject self) {
+        if (!ZBBetterFPS.g_OptimizeIsoMovingObject) {
             return false;
         }
-        optimized_separate(selfObj);
+        optimized_separate(self);
         return true;
     }
 
-    public static boolean isNPC(IsoGameCharacter plyr) {
-        try {
-            return (boolean) M_isNPC.invoke(plyr);
-        } catch (Throwable t) {
-            Logger.error("Failed to invoke isNPC method: " + t);
-            return false;
-        }
+    @Patch.Trampoline(className = "zombie.characters.IsoGameCharacter", methodName={"isNpc", "isNPC"})
+    public static boolean isNPC(IsoGameCharacter chr) {
+        return false; // ignored
     }
 
-    public static void optimized_separate(Object selfObj) {
-        IsoMovingObject self = (IsoMovingObject) selfObj;
-
+    public static void optimized_separate(IsoMovingObject self) {
         // Skip non-physical objects early
         if (!self.isSolidForSeparate() || !self.isPushableForSeparate()) {
             return;
