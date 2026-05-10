@@ -40,21 +40,20 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject_B42_12 {
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity, used in tests
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
-    @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)
-    public static boolean separate(@Patch.This Object selfObj) {
+    public static boolean separate(@Patch.This IsoMovingObject self) {
         if (!ZBBetterFPS.g_OptimizeIsoMovingObject) {
+            N_SKIP++;
             return false;
         }
-        optimized_separate(selfObj);
+        optimized_separate(self);
+        N_OK++;
         return true;
     }
 
-    public static void optimized_separate(Object selfObj) {
-        IsoMovingObject self = (IsoMovingObject) selfObj;
-
+    public static void optimized_separate(IsoMovingObject self) {
         // Skip non-physical objects early
         if (!self.isSolidForSeparate() || !self.isPushableForSeparate()) {
             return;

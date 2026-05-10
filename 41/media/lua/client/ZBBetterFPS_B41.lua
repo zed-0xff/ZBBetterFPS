@@ -4,14 +4,7 @@ local MOD_ID   = "ZBBetterFPS"
 local MOD_NAME = "Zed's Better FPS"
 
 local isDebug = getCore():getDebug()
-local chunksPerWidth = 0
-
-if ZBBetterFPS and ZBBetterFPS.getChunksPerWidth then
-    chunksPerWidth = ZBBetterFPS.getChunksPerWidth()
-end
-if not chunksPerWidth or chunksPerWidth <= 0 then
-    chunksPerWidth = 10 -- B41
-end
+local chunksPerWidth = 10 -- B41
 
 -- XXX numericValue has to be odd AND > 1, or tile rendering will break; 0 means "default"
 local function toOddValue(x)

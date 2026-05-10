@@ -4,10 +4,6 @@ import me.zed_0xff.zombie_buddy.Exposer;
 
 @Exposer.LuaClass
 public class ZBBetterFPS {
-    public static int getChunksPerWidth() {
-        return Patch_IsoChunkMap.getChunksPerWidth();
-    }
-
     // g_LowerCPUMode values
     public static final int CPU_MODE_PAUSED_OR_BG  = 1; // when paused OR background
     public static final int CPU_MODE_PAUSED_AND_BG = 2; // when paused AND background (default)

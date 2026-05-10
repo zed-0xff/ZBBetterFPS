@@ -6,7 +6,7 @@ import zombie.GameTime;
 import zombie.core.PerformanceSettings;
 
 public class Patch_MainLoop {
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
     // Frame timing for "always" mode
     public static long renderFrameStart = 0;
@@ -64,10 +64,14 @@ public class Patch_MainLoop {
 
         @Patch.OnExit
         public static void onExit() {
-            if (!shouldThrottle()) return;
+            if (!shouldThrottle()) {
+                N_SKIP++;
+                return;
+            }
 
             try {
                 if (isFullyInactive()) {
+                    N_OK++;
                     Thread.sleep(32);
                 } else if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS && mainFrameStart > 0) {
                     Thread.sleep(calcSleepTime(mainFrameStart));
@@ -91,10 +95,14 @@ public class Patch_MainLoop {
 
         @Patch.OnExit
         public static void onExit() {
-            if (!shouldThrottle()) return;
+            if (!shouldThrottle()) {
+                N_SKIP++;
+                return;
+            }
 
             try {
                 if (isFullyInactive()) {
+                    N_OK++;
                     Thread.sleep(16);
                 } else if (ZBBetterFPS.g_LowerCPUMode == ZBBetterFPS.CPU_MODE_ALWAYS && renderFrameStart > 0) {
                     Thread.sleep(calcSleepTime(renderFrameStart));
@@ -111,13 +119,18 @@ public class Patch_MainLoop {
     public static class LightingThreadPatch {
         @Patch.OnExit
         public static void onExit() {
-            if (!shouldThrottle()) return;
-
-            // Only throttle if the game world is loaded
-            if (!Utils.isGameStarted()) return;
+            if (!shouldThrottle() || !Utils.isGameStarted()) {
+                N_SKIP++;
+                return;
+            }
 
             try {
-                Thread.sleep(isFullyInactive() ? 100 : 1);
+                if (isFullyInactive()) {
+                    N_OK++;
+                    Thread.sleep(100);
+                } else {
+                    Thread.sleep(1);
+                }
             } catch (InterruptedException e) {
                 // Ignore
             }

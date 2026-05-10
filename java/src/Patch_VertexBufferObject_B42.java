@@ -1,12 +1,16 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
+import me.zed_0xff.zombie_buddy.AdapterFactory;
 import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.Patch.Field;
+import me.zed_0xff.zombie_buddy.Patch.Method;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
+
 import org.joml.Matrix4f;
 import zombie.core.Core;
 import zombie.core.opengl.ShaderProgram;
-
-import java.lang.reflect.Field;
 
 /**
  * This patch optimizes the constant matrix updates for 3D shaders.
@@ -24,6 +28,7 @@ import java.lang.reflect.Field;
  */
 @Patch(className = "zombie.core.skinnedmodel.model.VertexBufferObject", methodName = "setModelViewProjection")
 public class Patch_VertexBufferObject_B42 {
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
     public static class ShaderState {
         public int uLoc = -2;
@@ -33,18 +38,31 @@ public class Patch_VertexBufferObject_B42 {
 
     public static final ShaderState[] shaderCache = new ShaderState[1024];
 
-    public static final Field f_modelView  = Accessor.findField(ShaderProgram.class, "modelView",  "ModelView");
-    public static final Field f_projection = Accessor.findField(ShaderProgram.class, "projection", "Projection");
+    // @Patch.Adapter(zombie.core.opengl.ShaderProgram.class)
+    public interface ShaderProgramAdapter extends AdapterFactory.ClassAdapter<ShaderProgram> {
+        @Field({"modelView", "ModelView"})   RO<Matrix4f> modelView();
+        @Field({"projection", "Projection"}) RO<Matrix4f> projection();
 
-    public static final boolean ALL_FIELDS_FOUND = f_modelView != null && f_projection != null;
+        @Method
+        public void setTransformMatrix(int uLoc, Matrix4f matrix);
+    }
 
     @Patch.OnEnter(skipOn = true)
-    public static boolean setModelViewProjection(@Patch.Argument(0) Object shaderProgramObj) {
-        if (!ZBBetterFPS.g_Optimize3DModels || !ALL_FIELDS_FOUND) return false;
+    public static boolean setModelViewProjection(@Patch.Argument(0) ShaderProgram shaderProgram) {
+        if (!ZBBetterFPS.g_Optimize3DModels){
+            N_SKIP++;
+            return false;
+        }
+
+        ShaderProgramAdapter adp = AdapterFactory.create(shaderProgram, ShaderProgramAdapter.class);
+        if (adp == null){
+            N_FAIL++;
+            return false;
+        }
 
         try {
-            ShaderProgram shaderProgram = (ShaderProgram) shaderProgramObj;
             if (shaderProgram == null || !shaderProgram.isCompiled()) {
+                N_FAIL++;
                 return true;
             }
 
@@ -56,9 +74,9 @@ public class Patch_VertexBufferObject_B42 {
                 state = new ShaderState();
                 // Get uniform once and cache it
                 ShaderProgram.Uniform u = shaderProgram.getUniform("ModelViewProjection", 35676, false);
-                state.uLoc = (u == null) ? -1 : u.loc;
-                state.spMV = Accessor.tryGet(shaderProgram, f_modelView, (Matrix4f) null);
-                state.spPRJ = Accessor.tryGet(shaderProgram, f_projection, (Matrix4f) null);
+                state.uLoc  = (u == null) ? -1 : u.loc;
+                state.spMV  = adp.modelView().get();
+                state.spPRJ = adp.projection().get();
                 shaderCache[shaderId] = state;
             }
 
@@ -88,10 +106,12 @@ public class Patch_VertexBufferObject_B42 {
             tmp.mul(MV);
 
             // Directly call the internal method using the linked loc
-            Accessor.callExact(shaderProgram, "setTransformMatrix", new Class<?>[]{int.class, Matrix4f.class}, state.uLoc, tmp);
+            adp.setTransformMatrix(state.uLoc, tmp);
 
+            N_OK++;
             return true;
         } catch (Exception e) {
+            N_FAIL++;
             return false;
         }
     }

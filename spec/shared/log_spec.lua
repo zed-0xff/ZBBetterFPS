@@ -8,6 +8,7 @@ describe("console.txt", function()
     "InvocationTargetException",
     "ArrayIndexOutOfBoundsException",
     "IndexOutOfBoundsException",
+    "[!]",
   }
 
   for _, exception in ipairs(exceptions) do

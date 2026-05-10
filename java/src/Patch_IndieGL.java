@@ -15,7 +15,7 @@ import me.zed_0xff.zombie_buddy.Patch;
  * 2. Blend is NOT cached (skipping causes overhead names and TV text to render as black rectangles).
  */
 public class Patch_IndieGL {
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
     public static int lastAlphaFunc;
     public static float lastAlphaRef = -1.0f;
@@ -46,10 +46,12 @@ public class Patch_IndieGL {
         public static boolean onEnter(int func, float ref) {
             if (!ZBBetterFPS.g_OptimizeIndieGL) return false;
             if (func == lastAlphaFunc && ref == lastAlphaRef) {
+                N_OK++;
                 return true;
             }
             lastAlphaFunc = func;
-            lastAlphaRef = ref;
+            lastAlphaRef  = ref;
+            N_SKIP++;
             return false;
         }
     }
@@ -60,9 +62,11 @@ public class Patch_IndieGL {
         public static boolean onEnter(int func) {
             if (!ZBBetterFPS.g_OptimizeIndieGL) return false;
             if (func == lastDepthFunc) {
+                N_OK++;
                 return true;
             }
             lastDepthFunc = func;
+            N_SKIP++;
             return false;
         }
     }
@@ -74,9 +78,11 @@ public class Patch_IndieGL {
             if (!ZBBetterFPS.g_OptimizeIndieGL) return false;
             int m = mask ? 1 : 0;
             if (m == lastDepthMask) {
+                N_OK++;
                 return true;
             }
             lastDepthMask = m;
+            N_SKIP++;
             return false;
         }
     }

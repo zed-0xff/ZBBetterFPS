@@ -1,10 +1,12 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.Patch.Field;
 import me.zed_0xff.zombie_buddy.Patch.FieldRW;
-import me.zed_0xff.zombie_buddy.Patch.StaticFieldAlias;
+import me.zed_0xff.zombie_buddy.Patch.MemberHandle;
 import me.zed_0xff.zombie_buddy.Patch.This;
+
+import java.lang.invoke.VarHandle;
 
 import org.lwjgl.opengl.GL20;
 import zombie.core.SpriteRenderer;
@@ -31,19 +33,21 @@ import java.nio.ShortBuffer;
  */
 @Patch(className = "zombie.core.SpriteRenderer$RingBuffer", methodName = "create")
 public class Patch_RingBuffer {
-    public static final boolean ALL_FIELDS_FOUND = true;
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
+    // to be able to construct and reference instances of private StateRun class
     @Patch.TypeAlias("zombie.core.SpriteRenderer$RingBuffer$StateRun")
-    static class StateRun {
-        StateRun(SpriteRenderer.RingBuffer ringBuffer) {
+    public static class StateRun {
+        public StateRun(SpriteRenderer.RingBuffer ringBuffer) {
         }
     }
 
-    @Patch.StaticFieldAlias(className = "zombie.core.SpriteRenderer")
-    static int VERTEX_SIZE;
+    // @MemberHandle(name = "VERTEX_SIZE", className = "zombie.core.SpriteRenderer", type = int.class)
+    // public static VarHandle vh_VERTEX_SIZE;
 
     @Patch.OnEnter(skipOn = true)
     public static boolean create(
+            @MemberHandle(name = "VERTEX_SIZE", className = "zombie.core.SpriteRenderer", type = int.class) final VarHandle vh_VERTEX_SIZE,
             @This SpriteRenderer.RingBuffer self,
             @FieldRW long                   bufferSize,
             @FieldRW long                   bufferSizeInVertices,
@@ -57,10 +61,15 @@ public class Patch_RingBuffer {
             @FieldRW FloatBuffer[]          vertices,
             @FieldRW ByteBuffer[]           verticesBytes
         ) {
-        if (!ZBBetterFPS.g_OptimizeRingBuffer) return false;
-        if (!ALL_FIELDS_FOUND) return false;
+        if (!ZBBetterFPS.g_OptimizeRingBuffer){
+            N_SKIP++;
+            return false;
+        }
 
         try {
+            final int VERTEX_SIZE = (int) vh_VERTEX_SIZE.get();
+            System.out.println("[ZBBetterFPS] Patching SpriteRenderer.RingBuffer: VERTEX_SIZE = " + VERTEX_SIZE);
+
             for (int i = 0; i <= 4; i++) GL20.glEnableVertexAttribArray(i);
 
             long verticesCount = bufferSize / VERTEX_SIZE;
@@ -90,9 +99,11 @@ public class Patch_RingBuffer {
                 ibo[i].create();
             }
 
+            N_OK++;
             return true;
         } catch (Throwable t) {
             t.printStackTrace();
+            N_FAIL++;
             return false; // Fallback to vanilla create()
         }
     }

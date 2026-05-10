@@ -1,6 +1,8 @@
 package me.zed_0xff.zb_better_fps;
 
+import me.zed_0xff.zombie_buddy.AdapterFactory;
 import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.Patch.Method;
 
 import zombie.AttackType;
 import zombie.characters.BodyDamage.BodyPart;
@@ -41,21 +43,27 @@ import zombie.vehicles.BaseVehicle;
  */
 @Patch(className = "zombie.iso.IsoMovingObject", methodName = "separate")
 public class Patch_IsoMovingObject_B42_13 {
-    public static final boolean ALL_FIELDS_FOUND = true;
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
-    @Patch.RuntimeType
     @Patch.OnEnter(skipOn = true)
     public static boolean separate(@Patch.This IsoMovingObject self) {
         if (!ZBBetterFPS.g_OptimizeIsoMovingObject) {
+            N_SKIP++;
             return false;
         }
         optimized_separate(self);
+        N_OK++;
         return true;
     }
 
-    @Patch.Trampoline(className = "zombie.characters.IsoGameCharacter", methodName={"isNpc", "isNPC"})
+    public interface IsoGameCharacterADP extends AdapterFactory.ClassAdapter<IsoGameCharacter> {
+        @Method({"isNpc", "isNPC"})
+        public boolean isNPC();
+    }
+
     public static boolean isNPC(IsoGameCharacter chr) {
-        return false; // ignored
+        IsoGameCharacterADP adp = AdapterFactory.create(chr, IsoGameCharacterADP.class);
+        return adp != null && adp.isNPC();
     }
 
     public static void optimized_separate(IsoMovingObject self) {

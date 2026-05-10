@@ -1,20 +1,20 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
+import me.zed_0xff.zombie_buddy.Reflect;
+
+import java.lang.invoke.VarHandle;
 
 import zombie.core.Core;
+import zombie.iso.IsoCell;
 import zombie.iso.IsoWorld;
 
-import java.lang.reflect.Field;
-
 public class Utils {
-    public static final Field f_currentCell = Accessor.findField(IsoWorld.class,
-        "currentCell",
-        "CurrentCell"
+    static private final VarHandle vh_currentCell = Reflect.on(IsoWorld.class).getVarHandle(
+        IsoCell.class, "currentCell", "CurrentCell"
     );
 
     public static boolean isGameStarted() {
-        return IsoWorld.instance != null && Accessor.tryGet(IsoWorld.instance, f_currentCell, null) != null;
+        return IsoWorld.instance != null && vh_currentCell != null && vh_currentCell.get(IsoWorld.instance) != null;
     }
 
     public static boolean isDebug() {

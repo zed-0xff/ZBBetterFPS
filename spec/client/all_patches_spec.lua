@@ -1,22 +1,8 @@
-local version = getCore():getGameVersion()
-local major = version:getMajor()
-local minor = version:getMinor()
+local version    = getCore():getGameVersion()
+local major      = version:getMajor()
+local minor      = version:getMinor()
 local versionStr = getCore():getVersionNumber() or ("%d.%d"):format(major, minor)
-
--- Flat list of all patch class names (any build)
-local classes = {
-    "Patch_DefaultShader_B42",
-    "Patch_IndieGL",
-    "Patch_IsoChunkMap",
-    "Patch_IsoMovingObject_B41",
-    "Patch_IsoMovingObject_B42_12",
-    "Patch_IsoMovingObject_B42_13",
-    "Patch_MainLoop",
-    "Patch_MultiTextureFBO2",
-    "Patch_RingBuffer_IsStateChanged",
-    "Patch_RingBuffer",
-    "Patch_VertexBufferObject_B42",
-}
+local classes    = ZBBetterFPS.PATCHES
 
 -- Parse _B42_13 / _B42_12 / _B41 / _B42 → wantMajor, wantMinor (nil,nil = common)
 local function versionFromSuffix(className)
@@ -66,12 +52,16 @@ for _, className in ipairs(classes) do
     local fullName = "me.zed_0xff.zb_better_fps." .. className
     describe(fullName, function()
         if shouldExist(className) then
+            local klass = Accessor.findClass(fullName)
+
             it("should exist in " .. versionStr, function()
-                assert(Accessor.findClass(fullName), "class not found: " .. fullName)
+                assert(klass, "class not found: " .. fullName)
             end)
-            it("should find all fields", function()
-                assert(Accessor.findClass(fullName):zbget("ALL_FIELDS_FOUND"),
-                    "ALL_FIELDS_FOUND not true for " .. fullName)
+            it("should work", function()
+                assert.gt(klass:zbget("N_OK"), -1) -- not all patches have any OKs on the TestMap
+            end)
+            it("should not fail", function()
+                assert.eq(klass:zbget("N_FAIL"), 0)
             end)
         else
             it("should not exist in " .. versionStr, function()

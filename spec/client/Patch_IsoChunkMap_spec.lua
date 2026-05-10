@@ -11,10 +11,6 @@ describe("Patch_IsoChunkMap", function()
     -- min value is preset in loaded modconfig
 
     context("java side", function()
-        it("has chunksPerWidth of " .. tostring(CPW), function()
-            assert.eq(CPW, ZBBetterFPS.getChunksPerWidth())
-        end)
-
         it("sets chunkGridWidth to " .. tostring(CGW), function()
             assert.eq(CGW, IsoChunkMap.class:zbget('ChunkGridWidth') or IsoChunkMap.class:zbget('chunkGridWidth'))
         end)

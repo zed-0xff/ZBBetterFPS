@@ -1,6 +1,5 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Accessor;
 import me.zed_0xff.zombie_buddy.Patch;
 import me.zed_0xff.zombie_buddy.Patch.Field;
 import me.zed_0xff.zombie_buddy.Patch.FieldRW;
@@ -24,7 +23,7 @@ import zombie.core.Styles.Style;
  *    then "rescues" it if the underlying GPU state is actually identical.
  */
 public class Patch_RingBuffer_IsStateChanged {
-    public static final boolean ALL_FIELDS_FOUND = true;
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
     @Patch(className = "zombie.core.SpriteRenderer$RingBuffer", methodName = "isStateChanged")
     public static class Patch_B41 {
@@ -45,11 +44,21 @@ public class Patch_RingBuffer_IsStateChanged {
 
                 @Patch.Return(readOnly = false) boolean result
         ) {
-            result = unifiedPatch(
+            // Only attempt to optimize if the original logic decided a state change is needed
+            if (!result || !ZBBetterFPS.g_OptimizeSpriteBatching) {
+                N_SKIP++;
+                return;
+            }
+
+            boolean newResult = unifiedPatch(
                     currentUseAttribArray, currentRun, currentStyle, currentTexture0, currentTexture1, null,
                     draw, prevDraw, newStyle, newTexture0, newTexture1, null, newUseAttribArray,
                     result
             );
+            if (newResult != result) {
+                N_OK++;
+            }
+            result = newResult;
         }
     }
 
@@ -74,6 +83,11 @@ public class Patch_RingBuffer_IsStateChanged {
 
                 @Patch.Return(readOnly = false) boolean result
         ) {
+            // Only attempt to optimize if the original logic decided a state change is needed
+            if (!result || !ZBBetterFPS.g_OptimizeSpriteBatching) {
+                return;
+            }
+
             result = unifiedPatch(
                     currentUseAttribArray, currentRun, currentStyle, currentTexture0, currentTexture1, currentTexture2,
                     draw, prevDraw, newStyle, newTexture0, newTexture1, newTexture2, newUseAttribArray,
@@ -100,11 +114,6 @@ public class Patch_RingBuffer_IsStateChanged {
 
             final boolean result
     ) {
-        // Only attempt to optimize if the original logic decided a state change is needed
-        if (!result || !ZBBetterFPS.g_OptimizeSpriteBatching || !ALL_FIELDS_FOUND) {
-            return result;
-        }
-
         try {
             // Cannot merge if there's no current batch to merge into
             if (currentRun == null)
@@ -142,6 +151,7 @@ public class Patch_RingBuffer_IsStateChanged {
             return false;
 
         } catch (Throwable t) {
+            N_FAIL++;
             return result;
         }
     }

@@ -1,8 +1,8 @@
 ---
 # ZBSpec configuration (created by zbspec --init)
 
+debug: true
 unpause: false
-auto_shutdown: true
 
 # Your mod(s) to test (ZombieBuddy and ZBSpec are auto-included).
 # Note: mod 'id' is case-sensitive (must match the id= in the mod's mod.info).
@@ -17,4 +17,4 @@ game_versions:
   - 42.14
   - 42.15
   - 42.16
-  - unstable
+  - 42.17

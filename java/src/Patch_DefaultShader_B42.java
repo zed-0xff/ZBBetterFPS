@@ -22,7 +22,7 @@ import org.lwjgl.opengl.GL20;
  */
 @Patch(className = "zombie.core.DefaultShader", methodName = "setChunkDepth")
 public class Patch_DefaultShader_B42 {
-    public static final boolean ALL_FIELDS_FOUND = true; // for uniformity
+    public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
     public static int chunkDepthLoc = -2; // -2 indicates not yet initialized, -1 indicates not found
     public static float cachedChunkDepth = Float.NaN; // Stores the last depth value sent to GPU
@@ -44,11 +44,14 @@ public class Patch_DefaultShader_B42 {
                     GL20.glUniform1f(chunkDepthLoc, depth);
                     cachedChunkDepth = depth;
                 }
+                N_OK++;
                 return true; // Skip original code
             }
+            N_SKIP++;
             return false; // Uniform not found or other issue, run original method as fallback
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            N_FAIL++;
+            t.printStackTrace();
             return false; // On error, run original method as fallback
         }
     }
