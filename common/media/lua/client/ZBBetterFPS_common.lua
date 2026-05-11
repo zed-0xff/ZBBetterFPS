@@ -19,7 +19,7 @@ function ZBBetterFPS:stats()
     local results = {}
     if Accessor and Accessor.findClass then
         for _, patch in ipairs(ZBBetterFPS.PATCHES) do
-            local klass = Accessor.findClass(self.PKG_NAME .. "." .. patch)
+            local klass = Accessor.findClass(ZBBetterFPS.PKG_NAME .. "." .. patch)
             if klass then
                 local st = {
                     ok   = klass:zbget("N_OK"),
