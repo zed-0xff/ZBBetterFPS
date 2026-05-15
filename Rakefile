@@ -5,7 +5,7 @@ MOD_TYPE = "client"
 VERSIONS = {
   "41"    => "17",
   "42.12" => "17",
-  "42.13" => "24",
+  "42.13" => "25",
 }
 
 VERSIONS.each do |ver, jdk_ver|
