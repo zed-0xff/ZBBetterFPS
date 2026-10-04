@@ -22,6 +22,7 @@ import zombie.network.GameClient;
 import zombie.network.GameServer;
 import zombie.network.ServerOptions;
 import zombie.scripting.objects.CharacterTrait;
+import zombie.scripting.objects.ItemTag;
 import zombie.scripting.objects.MoodleType;
 import zombie.util.Type;
 import zombie.vehicles.BaseVehicle;
@@ -60,6 +61,8 @@ public class Patch_IsoMovingObject_B42_13 {
         @Shadow.Cast
         public static IsoGameCharacterADP cast(IsoGameCharacter instance) { return null; }
 
+        // 42.16: isNPC
+        // 42.17: isNpc
         @Shadow.Method({"isNpc", "isNPC"})
         public boolean isNPC() {
             return false; // method body is ignored
@@ -162,7 +165,8 @@ public class Patch_IsoMovingObject_B42_13 {
                             double cos = (double) dot / Math.sqrt(distSq);
                             if (cos < -0.866025d) { // > 150 degrees
                                 if (thisPlyr.getBeenSprintingFor() >= 70.0f
-                                        && WeaponType.getWeaponType(thisPlyr) == WeaponType.SPEAR) {
+                                        && WeaponType.getWeaponType(thisPlyr) == WeaponType.SPEAR
+                                        && !thisPlyr.getPrimaryHandItem().hasTag(ItemTag.FAKE_SPEAR)) { // since 42.19, but looks backwards-compatible
                                     thisPlyr.reportEvent("ChargeSpearConnect");
                                     thisPlyr.setAttackType(AttackType.CHARGE);
                                     thisPlyr.setAttackStarted(true);
