@@ -4,10 +4,20 @@ icon=icon_64.png
 poster=icon_256.png
 description=Optimize FPS by decreasing the number of rendered tiles.
 
+author=Zed
+url=https://github.com/zed-0xff/ZBBetterFPS
+patreon=https://patreon.com/zed_0xff
+
 versionMax=41.99
 incompatible=BetterFPS
 
 require=ZombieBuddy,modoptions
-javaJarFile=media/java/client/ZBBetterFPS.jar
+
 javaPkgName=me.zed_0xff.zb_better_fps
+
+javaJarFile=media/java/client/ZBBetterFPS-2x.jar
 ZBVersionMin=2.4.0
+ZBVersionMax=2.99.99
+
+javaJarFile1=media/java/client/ZBBetterFPS.jar
+ZBVersionMin1=3.0.0

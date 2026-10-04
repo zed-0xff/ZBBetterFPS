@@ -1,6 +1,6 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
 import zombie.core.DefaultShader;
 import org.lwjgl.opengl.GL20;
 

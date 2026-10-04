@@ -1,6 +1,6 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
 import org.lwjglx.opengl.Display;
 import zombie.GameTime;
 import zombie.core.PerformanceSettings;

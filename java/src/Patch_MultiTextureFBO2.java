@@ -1,7 +1,7 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Patch;
-import me.zed_0xff.zombie_buddy.Patch.Field;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Patch.Field;
 
 import zombie.characters.IsoPlayer;
 import zombie.core.textures.MultiTextureFBO2;

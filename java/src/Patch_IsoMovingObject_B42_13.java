@@ -1,8 +1,7 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.AdapterFactory;
-import me.zed_0xff.zombie_buddy.Patch;
-import me.zed_0xff.zombie_buddy.Patch.Method;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Shadow;
 
 import zombie.AttackType;
 import zombie.characters.BodyDamage.BodyPart;
@@ -56,14 +55,20 @@ public class Patch_IsoMovingObject_B42_13 {
         return true;
     }
 
-    public interface IsoGameCharacterADP extends AdapterFactory.ClassAdapter<IsoGameCharacter> {
-        @Method({"isNpc", "isNPC"})
-        public boolean isNPC();
+    @Shadow(className = "zombie.characters.IsoGameCharacter")
+    static class IsoGameCharacterADP {
+        @Shadow.Cast
+        public static IsoGameCharacterADP cast(IsoGameCharacter instance) { return null; }
+
+        @Shadow.Method({"isNpc", "isNPC"})
+        public boolean isNPC() {
+            return false; // method body is ignored
+        }
     }
 
-    public static boolean isNPC(IsoGameCharacter chr) {
-        IsoGameCharacterADP adp = AdapterFactory.create(chr, IsoGameCharacterADP.class);
-        return adp != null && adp.isNPC();
+    public static boolean isNPC(IsoPlayer plyr) {
+        IsoGameCharacterADP adp = IsoGameCharacterADP.cast(plyr);
+        return adp.isNPC();
     }
 
     public static void optimized_separate(IsoMovingObject self) {

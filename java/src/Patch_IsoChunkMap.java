@@ -1,10 +1,10 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.AdapterFactory;
-import me.zed_0xff.zombie_buddy.Patch;
-import me.zed_0xff.zombie_buddy.Patch.Field;
-import me.zed_0xff.zombie_buddy.Patch.FieldRW;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Patch.Field;
+import me.zed_0xff.zombie_buddy.Logger;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import se.krka.kahlua.vm.KahluaTable;
@@ -15,28 +15,34 @@ import zombie.Lua.LuaManager;
 public class Patch_IsoChunkMap {
     public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
+    static final Logger.Instance _logger = Logger.get("ZBBetterFPS", Logger.DEBUG);
+
+    @Patch.NameMap
+    public static Map<String, String> _nameMap = new HashMap<>();
+
     @Patch.OnExit
     public static void exit(
-        @Field(  {"CHUNKS_PER_WIDTH",  "ChunksPerWidth"})    final int CHUNKS_PER_WIDTH,
-        @FieldRW({"chunkGridWidth",    "ChunkGridWidth"})    int chunkGridWidth,
-        @FieldRW({"chunkWidthInTiles", "ChunkWidthInTiles"}) int chunkWidthInTiles,
-        @Patch.NameMap                                       final Map<String, String> nameMap
+        @Field({"CHUNKS_PER_WIDTH",  "ChunksPerWidth"})    final int CHUNKS_PER_WIDTH,
+        @Field({"chunkGridWidth",    "ChunkGridWidth"})    int chunkGridWidth,
+        @Field({"chunkWidthInTiles", "ChunkWidthInTiles"}) int chunkWidthInTiles
     ) {
+        _logger.debug("CalcChunkWidth: CHUNKS_PER_WIDTH", CHUNKS_PER_WIDTH, "chunkGridWidth", chunkGridWidth, "chunkWidthInTiles", chunkWidthInTiles, "g_MaxRenderDistance", ZBBetterFPS.g_MaxRenderDistance);
+
         if (ZBBetterFPS.g_MaxRenderDistance == 0) {
-            System.out.println("[ZBBetterFPS] using default render distance " + chunkGridWidth);
+            _logger.info("using default render distance", chunkGridWidth);
             N_SKIP++;
             return;
         }
 
         if (CHUNKS_PER_WIDTH <= 0 || chunkGridWidth <= 0 || chunkWidthInTiles <= 0) {
-            System.err.println("[ZBBetterFPS] invalid values: ChunksPerWidth = " + CHUNKS_PER_WIDTH + ", ChunkGridWidth = " + chunkGridWidth + ", ChunkWidthInTiles = " + chunkWidthInTiles);
+            _logger.error("invalid values: ChunksPerWidth =", CHUNKS_PER_WIDTH, ", ChunkGridWidth =", chunkGridWidth, ", ChunkWidthInTiles =", chunkWidthInTiles);
             N_FAIL++;
             return;
         }
 
         if (chunkWidthInTiles != chunkGridWidth * CHUNKS_PER_WIDTH) {
-            System.err.println("[ZBBetterFPS] chunkWidthInTiles is not equal to chunkGridWidth * CHUNKS_PER_WIDTH, skipping patch");
-            System.err.println("[ZBBetterFPS] ChunksPerWidth = " + CHUNKS_PER_WIDTH + ", ChunkGridWidth = " + chunkGridWidth + ", ChunkWidthInTiles = " + chunkWidthInTiles);
+            _logger.error("chunkWidthInTiles is not equal to chunkGridWidth * CHUNKS_PER_WIDTH, skipping patch");
+            _logger.error("ChunksPerWidth =", CHUNKS_PER_WIDTH, ", ChunkGridWidth =", chunkGridWidth, ", ChunkWidthInTiles =", chunkWidthInTiles);
             N_FAIL++;
             return;
         }
@@ -44,25 +50,25 @@ public class Patch_IsoChunkMap {
         chunkGridWidth    = ZBBetterFPS.g_MaxRenderDistance;
         chunkWidthInTiles = chunkGridWidth * CHUNKS_PER_WIDTH;
 
-        System.out.println("[ZBBetterFPS] Done: ChunkGridWidth = " + chunkGridWidth + ", ChunkWidthInTiles = " + chunkWidthInTiles);
-        updateLuaCachedValues(nameMap, chunkGridWidth, chunkWidthInTiles);
+        _logger.info("Done: ChunkGridWidth =", chunkGridWidth, ", ChunkWidthInTiles =", chunkWidthInTiles);
+        updateLuaCachedValues(chunkGridWidth, chunkWidthInTiles);
         N_OK++;
     }
 
-    public static void updateLuaCachedValues(final Map<String, String> nameMap, int chunkGridWidth, int chunkWidthInTiles) {
+    public static void updateLuaCachedValues(int chunkGridWidth, int chunkWidthInTiles) {
         var env = LuaManager.env;
         if (env == null) {
-            System.err.println("[ZBBetterFPS] updateLuaCachedValues: Failed to get Lua environment");
+            _logger.error("updateLuaCachedValues: Failed to get Lua environment");
             return;
         }
 
         var isoChunkMap = env.rawget("IsoChunkMap");
         if (isoChunkMap instanceof KahluaTable tbl) {
-            syncField(tbl, nameMap, "chunkGridWidth",    chunkGridWidth);
-            syncField(tbl, nameMap, "chunkWidthInTiles", chunkWidthInTiles);
+            syncField(tbl, _nameMap, "chunkGridWidth",    chunkGridWidth);
+            syncField(tbl, _nameMap, "chunkWidthInTiles", chunkWidthInTiles);
         } else {
             N_FAIL++;
-            System.err.println("[ZBBetterFPS] updateLuaCachedValues: Failed to get IsoChunkMap");
+            _logger.error("updateLuaCachedValues: Failed to get IsoChunkMap");
         }
     }
 
@@ -70,8 +76,8 @@ public class Patch_IsoChunkMap {
         var resolvedName = nameMap.get(fieldName);
         if (resolvedName == null) {
             N_FAIL++;
-            System.err.println("[ZBBetterFPS] syncField: Failed to resolve field name for " + fieldName);
-            // Logger.debug("[ZBBetterFPS] nameMap:", nameMap);
+            _logger.error("syncField: Failed to resolve field name for", fieldName);
+            _logger.debug("[ZBBetterFPS] nameMap:", nameMap);
             return;
         }
         tbl.rawset(resolvedName, value);

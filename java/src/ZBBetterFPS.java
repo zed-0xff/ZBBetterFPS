@@ -1,9 +1,12 @@
 package me.zed_0xff.zb_better_fps;
 
 import me.zed_0xff.zombie_buddy.Exposer;
+import me.zed_0xff.zombie_buddy.Logger;
 
 @Exposer.LuaClass
 public class ZBBetterFPS {
+    static final Logger.Instance _logger = Logger.get("ZBBetterFPS", Logger.DEBUG);
+
     // g_LowerCPUMode values
     public static final int CPU_MODE_PAUSED_OR_BG  = 1; // when paused OR background
     public static final int CPU_MODE_PAUSED_AND_BG = 2; // when paused AND background (default)
@@ -24,7 +27,7 @@ public class ZBBetterFPS {
 
     public static boolean g_EnableMetrics = false;
 
-    public static void setMaxRenderDistance(int distance)    { g_MaxRenderDistance = distance; }
+    public static void setMaxRenderDistance(int distance)    { g_MaxRenderDistance = distance; _logger.debug("MaxRenderDistance set to", distance); }
     public static void setOptimizeIndieGL(boolean b)         { g_OptimizeIndieGL = b; }
     public static void setOptimizeSpriteBatching(boolean b)  { g_OptimizeSpriteBatching = b; }
     public static void setOptimizeRingBuffer(boolean b)      { g_OptimizeRingBuffer = b; }

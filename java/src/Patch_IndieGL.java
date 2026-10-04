@@ -1,6 +1,6 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
 
 /**
  * This patch optimizes the `IndieGL` class to suppress redundant OpenGL state changes.

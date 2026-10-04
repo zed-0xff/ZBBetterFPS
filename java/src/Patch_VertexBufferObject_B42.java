@@ -1,12 +1,10 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.AdapterFactory;
-import me.zed_0xff.zombie_buddy.Patch;
-import me.zed_0xff.zombie_buddy.Patch.Field;
-import me.zed_0xff.zombie_buddy.Patch.Method;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Shadow;
+import me.zed_0xff.zombie_buddy.annotations.Patch.Field;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.VarHandle;
 
 import org.joml.Matrix4f;
 import zombie.core.Core;
@@ -38,13 +36,25 @@ public class Patch_VertexBufferObject_B42 {
 
     public static final ShaderState[] shaderCache = new ShaderState[1024];
 
-    // @Patch.Adapter(zombie.core.opengl.ShaderProgram.class)
-    public interface ShaderProgramAdapter extends AdapterFactory.ClassAdapter<ShaderProgram> {
-        @Field({"modelView", "ModelView"})   RO<Matrix4f> modelView();
-        @Field({"projection", "Projection"}) RO<Matrix4f> projection();
+    @Shadow(className = "zombie.core.opengl.ShaderProgram")
+    static class ShaderProgramAdapter {
+        // private final ShaderProgram _instance;
+        //
+        // ShaderProgramAdapter(ShaderProgram instance) {
+        //     _instance = instance;
+        // }
 
-        @Method
-        public void setTransformMatrix(int uLoc, Matrix4f matrix);
+        @Shadow.Field({"modelView",  "ModelView"})  Matrix4f modelView;
+        @Shadow.Field({"projection", "Projection"}) Matrix4f projection;
+
+        @Shadow.Method
+        void setTransformMatrix(int uLoc, Matrix4f matrix) {
+        }
+
+        @Shadow.Cast
+        public static ShaderProgramAdapter cast(ShaderProgram instance) {
+            return null; // ignored
+        }
     }
 
     @Patch.OnEnter(skipOn = true)
@@ -54,7 +64,7 @@ public class Patch_VertexBufferObject_B42 {
             return false;
         }
 
-        ShaderProgramAdapter adp = AdapterFactory.create(shaderProgram, ShaderProgramAdapter.class);
+        ShaderProgramAdapter adp = ShaderProgramAdapter.cast(shaderProgram);
         if (adp == null){
             N_FAIL++;
             return false;
@@ -75,8 +85,8 @@ public class Patch_VertexBufferObject_B42 {
                 // Get uniform once and cache it
                 ShaderProgram.Uniform u = shaderProgram.getUniform("ModelViewProjection", 35676, false);
                 state.uLoc  = (u == null) ? -1 : u.loc;
-                state.spMV  = adp.modelView().get();
-                state.spPRJ = adp.projection().get();
+                state.spMV  = adp.modelView;
+                state.spPRJ = adp.projection;
                 shaderCache[shaderId] = state;
             }
 

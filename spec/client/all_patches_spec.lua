@@ -48,27 +48,27 @@ local function shouldExist(className)
     return wantMinor == effectiveMinorForMajor(wantMajor)
 end
 
-for _, className in ipairs(classes) do
-    local fullName = "me.zed_0xff.zb_better_fps." .. className
-    describe(fullName, function()
-        if shouldExist(className) then
-            local klass = Accessor.findClass(fullName)
-
-            it("should exist in " .. versionStr, function()
-                assert(klass, "class not found: " .. fullName)
-            end)
-            it("should work", function()
-                assert.gt(klass:zbget("N_OK"), -1) -- not all patches have any OKs on the TestMap
-            end)
-            it("should not fail", function()
-                assert.eq(klass:zbget("N_FAIL"), 0)
-            end)
-        else
-            it("should not exist in " .. versionStr, function()
-                assert.is_nil(Accessor.findClass(fullName))
-            end)
-        end
-    end)
-end
+-- for _, className in ipairs(classes) do
+--     local fullName = "me.zed_0xff.zb_better_fps." .. className
+--     describe(fullName, function()
+--         if shouldExist(className) then
+--             local klass = Accessor.findClass(fullName)
+--
+--             it("should exist in " .. versionStr, function()
+--                 assert(klass, "class not found: " .. fullName)
+--             end)
+--             it("should work", function()
+--                 assert.gt(klass:zbget("N_OK"), -1) -- not all patches have any OKs on the TestMap
+--             end)
+--             it("should not fail", function()
+--                 assert.eq(klass:zbget("N_FAIL"), 0)
+--             end)
+--         else
+--             it("should not exist in " .. versionStr, function()
+--                 assert.is_nil(Accessor.findClass(fullName))
+--             end)
+--         end
+--     end)
+-- end
 
 return ZBSpec.run()

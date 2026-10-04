@@ -1,12 +1,8 @@
 package me.zed_0xff.zb_better_fps;
 
-import me.zed_0xff.zombie_buddy.Patch;
-import me.zed_0xff.zombie_buddy.Patch.Field;
-import me.zed_0xff.zombie_buddy.Patch.FieldRW;
-import me.zed_0xff.zombie_buddy.Patch.MemberHandle;
-import me.zed_0xff.zombie_buddy.Patch.This;
-
-import java.lang.invoke.VarHandle;
+import me.zed_0xff.zombie_buddy.annotations.Patch;
+import me.zed_0xff.zombie_buddy.annotations.Patch.*;
+import me.zed_0xff.zombie_buddy.annotations.Shadow;
 
 import org.lwjgl.opengl.GL20;
 import zombie.core.SpriteRenderer;
@@ -36,30 +32,27 @@ public class Patch_RingBuffer {
     public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
     // to be able to construct and reference instances of private StateRun class
-    @Patch.TypeAlias("zombie.core.SpriteRenderer$RingBuffer$StateRun")
+    @Shadow(className = "zombie.core.SpriteRenderer$RingBuffer$StateRun")
     public static class StateRun {
         public StateRun(SpriteRenderer.RingBuffer ringBuffer) {
         }
     }
 
-    // @MemberHandle(name = "VERTEX_SIZE", className = "zombie.core.SpriteRenderer", type = int.class)
-    // public static VarHandle vh_VERTEX_SIZE;
-
     @Patch.OnEnter(skipOn = true)
     public static boolean create(
-            @MemberHandle(name = "VERTEX_SIZE", className = "zombie.core.SpriteRenderer", type = int.class) final VarHandle vh_VERTEX_SIZE,
+            @VarHandle(name="VERTEX_SIZE", className="zombie.core.SpriteRenderer", type=int.class) final java.lang.invoke.VarHandle vh_VERTEX_SIZE,
             @This SpriteRenderer.RingBuffer self,
-            @FieldRW long                   bufferSize,
-            @FieldRW long                   bufferSizeInVertices,
-            @FieldRW GLVertexBufferObject[] ibo,
-            @FieldRW long                   indexBufferSize,
-            @FieldRW ShortBuffer[]          indices,
-            @FieldRW ByteBuffer[]           indicesBytes,
-            @FieldRW int                    numBuffers,
-            @FieldRW StateRun[]             stateRun,
-            @FieldRW GLVertexBufferObject[] vbo,
-            @FieldRW FloatBuffer[]          vertices,
-            @FieldRW ByteBuffer[]           verticesBytes
+            @Field long                     bufferSize,
+            @Field long                     bufferSizeInVertices,
+            @Field GLVertexBufferObject[]   ibo,
+            @Field long                     indexBufferSize,
+            @Field ShortBuffer[]            indices,
+            @Field ByteBuffer[]             indicesBytes,
+            @Field int                      numBuffers,
+            @Field StateRun[]               stateRun,
+            @Field GLVertexBufferObject[]   vbo,
+            @Field FloatBuffer[]            vertices,
+            @Field ByteBuffer[]             verticesBytes
         ) {
         if (!ZBBetterFPS.g_OptimizeRingBuffer){
             N_SKIP++;

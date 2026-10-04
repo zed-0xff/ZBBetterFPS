@@ -41,6 +41,12 @@ def excludeSuffixes = versionSuffixes.findAll { suf ->
     }
 }
 
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(project.findProperty('javaVersion').toInteger())
+  }
+}
+
 sourceSets {
     main {
         java {
