@@ -1,7 +1,7 @@
 if not ZBBetterFPS then return end
 
 ZBBetterFPS.PKG_NAME = "me.zed_0xff.zb_better_fps"
-ZBBetterFPS.PATCHES  = {
+ZBBetterFPS.PATCHES  = { -- TODO: generate automatically
     "Patch_DefaultShader_B42",
     "Patch_IndieGL",
     "Patch_IsoChunkMap",
@@ -17,20 +17,20 @@ ZBBetterFPS.PATCHES  = {
 
 function ZBBetterFPS:stats()
     local results = {}
-    if Accessor and Accessor.findClass then
-        for _, patch in ipairs(ZBBetterFPS.PATCHES) do
-            local klass = Accessor.findClass(ZBBetterFPS.PKG_NAME .. "." .. patch)
-            if klass then
-                local st = {
-                    ok   = klass:zbget("N_OK"),
-                    fail = klass:zbget("N_FAIL"),
-                    skip = klass:zbget("N_SKIP"),
-                }
-                if st.fail == 0 then st.fail = nil end
-                if st.skip == 0 then st.skip = nil end
-                results[patch] = st
-            end
-        end
-    end
+    -- if Accessor and Accessor.findClass then
+    --     for _, patch in ipairs(ZBBetterFPS.PATCHES) do
+    --         local klass = Accessor.findClass(ZBBetterFPS.PKG_NAME .. "." .. patch)
+    --         if klass then
+    --             local st = {
+    --                 ok   = klass:zbget("N_OK"),
+    --                 fail = klass:zbget("N_FAIL"),
+    --                 skip = klass:zbget("N_SKIP"),
+    --             }
+    --             if st.fail == 0 then st.fail = nil end
+    --             if st.skip == 0 then st.skip = nil end
+    --             results[patch] = st
+    --         end
+    --     end
+    -- end
     return results
 end

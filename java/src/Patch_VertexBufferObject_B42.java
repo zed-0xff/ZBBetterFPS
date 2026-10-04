@@ -3,8 +3,7 @@ package me.zed_0xff.zb_better_fps;
 import me.zed_0xff.zombie_buddy.annotations.Patch;
 import me.zed_0xff.zombie_buddy.annotations.Shadow;
 import me.zed_0xff.zombie_buddy.annotations.Patch.Field;
-
-import java.lang.invoke.MethodHandle;
+import me.zed_0xff.zombie_buddy.Logger;
 
 import org.joml.Matrix4f;
 import zombie.core.Core;
@@ -28,6 +27,8 @@ import zombie.core.opengl.ShaderProgram;
 public class Patch_VertexBufferObject_B42 {
     public static int N_OK = 0, N_SKIP = 0, N_FAIL = 0;
 
+    static final Logger.Instance _logger = Logger.get("ZBBetterFPS", Logger.DEBUG);
+
     public static class ShaderState {
         public int uLoc = -2;
         public Matrix4f spMV;
@@ -38,12 +39,6 @@ public class Patch_VertexBufferObject_B42 {
 
     @Shadow(className = "zombie.core.opengl.ShaderProgram")
     static class ShaderProgramAdapter {
-        // private final ShaderProgram _instance;
-        //
-        // ShaderProgramAdapter(ShaderProgram instance) {
-        //     _instance = instance;
-        // }
-
         @Shadow.Field({"modelView",  "ModelView"})  Matrix4f modelView;
         @Shadow.Field({"projection", "Projection"}) Matrix4f projection;
 
@@ -67,12 +62,14 @@ public class Patch_VertexBufferObject_B42 {
         ShaderProgramAdapter adp = ShaderProgramAdapter.cast(shaderProgram);
         if (adp == null){
             N_FAIL++;
-            return false;
+            _logger.once.error("setModelViewProjection: ShaderProgramAdapter cast failed");
+            return true;
         }
 
         try {
             if (shaderProgram == null || !shaderProgram.isCompiled()) {
                 N_FAIL++;
+                _logger.once.error("setModelViewProjection: shaderProgram is null or not compiled");
                 return true;
             }
 
@@ -122,6 +119,9 @@ public class Patch_VertexBufferObject_B42 {
             return true;
         } catch (Exception e) {
             N_FAIL++;
+            if (_logger.once.error("setModelViewProjection: Exception occurred", e)) {
+                Logger.printStackTrace(e, 10);
+            }
             return false;
         }
     }
