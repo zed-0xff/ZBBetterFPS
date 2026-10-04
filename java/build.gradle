@@ -31,13 +31,14 @@ jar {
 }
 
 // Conditional include by variant: B42_12 and B42_13 both include B42
-def versionSuffixes = ['B41', 'B42', 'B42_12', 'B42_13']
+def versionSuffixes = ['B41', 'B42', 'B42_12', 'B42_13', 'B42_20']
 def excludeSuffixes = versionSuffixes.findAll { suf ->
     switch (variant) {
-        case 'B41':     return suf in ['B42', 'B42_12', 'B42_13']
-        case 'B42':     return suf in ['B41', 'B42_12', 'B42_13']
-        case 'B42_12':  return suf in ['B41', 'B42_13']
-        case 'B42_13':  return suf in ['B41', 'B42_12']
+        case 'B41':     return suf in ['B42', 'B42_12', 'B42_13', 'B42_20']
+        case 'B42':     return suf in ['B41', 'B42_12', 'B42_13', 'B42_20']
+        case 'B42_12':  return suf in ['B41', 'B42_13', 'B42_20']
+        case 'B42_13':  return suf in ['B41', 'B42_12', 'B42_20']
+        case 'B42_20':  return suf in ['B41', 'B42_12', 'B42_13']
         default:        return suf != variant
     }
 }
