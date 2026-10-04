@@ -15,11 +15,12 @@ def variant = (pzParts[0] == '41') ? 'B41' : "B${pzParts[0]}_${pzParts[1]}"
 def GAME_DIR = "${HOME_DIR}/projects/zomboid/versions/${ZVersion}"
 
 dependencies {
-    compileOnly files("${CUR_GAME_DIR}/ZombieBuddy.jar")
     if (variant == 'B41' || variant == 'B42_12') {
+        compileOnly files("${HOME_DIR}/projects/zomboid/mods/ZombieBuddy/java/build/jdk17/libs/ZombieBuddy.jar")
         compileOnly files("${GAME_DIR}/java")
         compileOnly files("${GAME_DIR}/java/lwjgl-opengl.jar")
     } else {
+        compileOnly files("${CUR_GAME_DIR}/ZombieBuddy.jar")
         compileOnly files("${GAME_DIR}/java/ProjectZomboid.jar")
     }
 }
